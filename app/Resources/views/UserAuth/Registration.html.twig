@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<div class="center-div panel panel-default" id="registration-panel">
+
+{{ form_start(form) }}
+    {{ form_row(form.firstname) }}
+    {{ form_row(form.lastname) }}
+    {{ form_row(form.mobilenumber) }}
+    {{ form_row(form.homeaddress) }}
+    {{ form_row(form.username) }}
+    {{ form_row(form.email) }}
+    {{ form_row(form.plainPassword.first) }}
+    {{ form_row(form.plainPassword.second) }}
+
+    <button type="submit" class="btn btn-primary" value="Register!" id="registration-submit"><span class="glyphicon glyphicon-ok"></span> Register!</button>
+    <button type="reset" class="btn btn-warning" id="form-clear"><span class="glyphicon glyphicon-remove"></span> Clear Form</button>
+{{ form_end(form) }}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container">
+
+    {% for flashMessage in app.session.flashbag.get('notice') %}
+    <div class="alert alert-success">
+        {{ flashMessage }}
+    </div>
+    <hr />
+    {% endfor %}
+
+    {% for flashMessage in app.session.flashbag.get('error') %}
+    <div class="alert alert-danger">
+        {{ flashMessage }}
+    </div>
+    <hr />
+    {% endfor %}
+
+    {% if app.user.memberType=='ROLE_MEMBER' %}
+    <a href="/vendor/mystore"><button type="button" class="btn btn-info"><span class="glyphicon glyphicon-arrow-left"></span>Back</button></a>
+    {% endif %}
+
+    {% if app.user.memberType=='ROLE_DELIVERY_GUY' %}
+    <center><h3>ORDERS TO BE SHIPPED</h3></center>
+    {% endif %}
+
+    {% if app.user.memberType=='ROLE_MEMBER' %}
+    <center><h3>SUMMARY OF ALL ORDERS</h3></center>
+    {% endif %}
+
+    <hr />
+
+    {% for groupedOrder in groupedOrders %}
+    <div class="table-responsive" id="table-display-fix">
+
+        {% if groupedOrder['group']['status'] == 'ACCEPTED BY VENDOR: Being Shipped' %}
+        <div class="alert alert-warning">This customer has orders that are currently being shipped.</div>
+        {% endif %}
+
+        {% if groupedOrder['group']['status'] == 'DELIVERED' %}
+        <div class="alert alert-success">Last order of customer was successfully delivered by <b>{{ groupedOrder['group']['deliveryGuy'] }}</b> on {{ groupedOrder['group']['transactionDate'] }}</div>
+        {% endif %}
+
+        <p>Last Transaction Date: <b>{{ groupedOrder['group']['transactionDate'] }}</b></p>
+        <p>Customer Name: <b>{{ groupedOrder['group']['customerName'] }}</b></p>
+        <p>Address: <b>{{ groupedOrder['group']['customerAddress'] }}</b></p>
+        <p>Contact Number: <b>{{ groupedOrder['group']['customerContactNumber'] }}</b></p>
+
+        <table class="table table-striped table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Transaction Date</th>
+                    <th>Order Quantity</th>
+                    <th>Product Name</th>
+                    <th>Unit Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in groupedOrder['group'] %}
+                {% for order in customer %}
+                <tr>
+                    <td>{{ order.status }}</td>
+                    <td>{{ order.transactionDate }}</td>
+                    <td>{{ order.quantity }}</td>
+                    <td>{{ order.productName }}</td>
+                    <td>{{ order.productPrice }}</td>
+                    <td>{{ order.productPrice * order.quantity}}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <h3>Grand Total: PHP {{ groupedOrder['group']['grandTotal'] }}</h3>
+        <br />
+
+        {% if groupedOrder['group']['status'] == 'ACCEPTED BY VENDOR: Being Shipped' %}
+
+        {% if app.user.memberType=='ROLE_MEMBER' %}
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#rejectModal{{ groupedOrder['group']['customerId'] }}"><span class="glyphicon glyphicon-ban-circle"></span> Cancel Shipment</button>
+
+        <div id="rejectModal{{ groupedOrder['group']['customerId'] }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Confirm Cancellation</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p><b>Are you sure that you want to cancel the delivery?</b></p>
+                        <br />
+                        <p>All orders with a <i>Being Shipped</i> status will be marked again as <b>Pending</b>. </p>
+                        <a href="/vendor/shipcancel/{{ groupedOrder['group']['customerId'] }}"><button class="btn btn-danger">Confirm Cancellation</button></a>
+                        <button class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if app.user.memberType=='ROLE_DELIVERY_GUY' %}
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#deliveryModal{{ groupedOrder['group']['customerId'] }}"><span class="glyphicon glyphicon-ok"></span> I have delivered this order!</button>
+
+        <div id="deliveryModal{{ groupedOrder['group']['customerId'] }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Confirm Order Delivery</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p><b>Are you sure that this is the order you delivered?</b></p>
+                        <br />
+                        <p>You are authorized to collect <b>PHP {{ groupedOrder['group']['grandTotal'] }}</b> from the customer.</p>
+                        <a href="/shipments/delivered/{{ groupedOrder['group']['customerId'] }}"><button class="btn btn-primary">Confirm</button></a>
+                        <button class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% endif %}
+
+    </div>
+    <br />
+
+
+    {% endfor %}
+</div>
+{% endblock %}

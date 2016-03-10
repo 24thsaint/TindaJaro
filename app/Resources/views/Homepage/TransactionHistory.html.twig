@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div id="store-products" class="container">
+    <center><h3>Transaction History</h3></center>
+
+    <hr />
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <th>Transaction Date</th>
+                <th>Product name</th>
+                <th>Quantity Ordered</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+                <th>Status</th>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.transactionDate }}</td>
+                    <td>{{ transaction.productName }}</td>
+                    <td>{{ transaction.orderQuantity }}</td>
+                    <td>{{ transaction.productPrice }}</td>
+                    <td>{{ transaction.orderQuantity * transaction.productPrice }}</td>
+                    <th><span style="color: green">{{ transaction.status }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

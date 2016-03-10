@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<div class="container">
+    <h1><img class="preview-thumbnail img-circle" src="{{ asset('/uploads/stores/images/'~storeimage) }}" /> {{ storename }}</h1>
+    <div class="inline">
+        <div id="ratingNotification" class="alert alert-success fade in" style="display: none;">Your rating was successfully acknowledged!</div>
+        <label for="input-7-xs" class="control-label">Store Rating:</label>
+        <input id="input-7-xs" class="rating rating-loading" showClear="false" value="{{ storeRating }}" data-min="0" data-max="5" data-step="1" data-size="xs" />
+    </div>
+
+    <hr />
+    {% for product in products %}
+    <a href="/product/view/{{ product.productId }}">
+        <div class="col-sm-2 panel panel-default hover-effect">
+            <center>
+            <img class="preview-thumbnail" src="{{ asset('/uploads/products/images/'~product.productImage) }}" /><br />
+            <h3>{{ product.productName }}</h3>
+            <p>
+            <span style="color: green">
+                <b>PHP {{ product.productPrice }}</b><br />
+            </span>
+                Quantity Left: {{ product.productQuantity }}
+            </p>
+            </center>
+        </div>
+    </a>
+    {% endfor %}
+
+</div>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#input-7-xs').on('rating.change', function(event, value, caption) {
+                rate(value);
+                $('#ratingNotification').slideDown();
+
+                window.setTimeout(
+                    function() {
+                        $('#ratingNotification').alert("close");
+                    }, 2000
+                );
+            });
+        });
+
+        function rate(rating) {
+    	    var xmlhttp = new XMLHttpRequest();
+    	    xmlhttp.onreadystatechange = function() {
+    	        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    $('#input-7-xs').rating('update', xmlhttp.responseText);
+    	        }
+    	    };
+    	    xmlhttp.open("GET", "/rate/{{ storeId }}/" + rating, true);
+    	    xmlhttp.send();
+    	}
+    </script>
+
+{% endblock %}

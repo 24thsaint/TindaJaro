@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container">
+
+    {% for flashMessage in app.session.flashbag.get('notice') %}
+    <div class="alert alert-success">
+        {{ flashMessage }}
+    </div>
+    <hr />
+    {% endfor %}
+
+    <a href="/vendor/mystore"><button type="button" class="btn btn-info"><span class="glyphicon glyphicon-arrow-left"></span>Back</button></a>
+
+    <center><h3>Pending Orders</h3></center>
+
+    <hr />
+
+        {% for groupedOrder in groupedOrders %}
+        <div class="table-responsive" id="table-display-fix">
+
+        <p>Customer Name: <b>{{ groupedOrder['group']['customerName'] }}</b></p>
+        <p>Address: <b>{{ groupedOrder['group']['customerAddress'] }}</b></p>
+        <p>Contact Number: <b>{{ groupedOrder['group']['customerContactNumber'] }}</b></p>
+
+        <table class="table table-striped table-hover table-bordered">
+            <thead>
+                <tr>
+                <th>Order Quantity</th>
+                <th>Product Name</th>
+                <th>Unit Price</th>
+                <th>Subtotal</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for customer in groupedOrder['group'] %}
+                {% for order in customer %}
+                <tr>
+                    <td>{{ order.quantity }}</td>
+                    <td>{{ order.productName }}</td>
+                    <td>{{ order.productPrice }}</td>
+                    <td>{{ order.productPrice * order.quantity}}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <h3>Grand Total: PHP {{ groupedOrder['group']['grandTotal'] }}</h3>
+        <br />
+
+        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#deliverModal{{ groupedOrder['group']['customerId'] }}"><span class="glyphicon glyphicon-gift"></span> Ship Order</a>
+        <a href="#" class="btn btn-danger" data-toggle="modal" data-target="#rejectModal{{ groupedOrder['group']['customerId'] }}"><span class="glyphicon glyphicon-ban-circle"></span> Reject Order</a>
+
+        </div>
+        <br />
+
+        <div id="deliverModal{{ groupedOrder['group']['customerId'] }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Confirm Ship</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p><b>Are you sure that you want to ship this order?</b></p>
+                        <a href="/vendor/ship/{{ groupedOrder['group']['customerId'] }}" class="btn btn-primary" id="confirm-ship">Confirm Shipment</a>
+                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="rejectModal{{ groupedOrder['group']['customerId'] }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Confirm Reject</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p><b>Are you sure that you want to reject this order?</b></p>
+                        <br />
+                        <p>Your customer will be notified that the order has been rejected.</p>
+                        <a href="/vendor/reject/{{ groupedOrder['group']['customerId'] }}"><button class="btn btn-danger">Reject</button></a>
+                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+</div>
+{% endblock %}

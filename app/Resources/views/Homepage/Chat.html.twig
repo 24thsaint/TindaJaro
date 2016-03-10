@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<div id="messages-pane">
+
+    <h2>Chat and Haggle Corner</h2>
+    <hr />
+
+    <div id="messages">
+        Loading messages... Please wait...
+    </div>
+
+    <div id="chatter">
+        <input type="text" name="message" id="message" class="form-control wide-box" maxlength=255 onkeydown="sendMessage(event.key)" autocomplete="off" />
+        <button type="button" class="btn btn-primary pull-right" onclick="sendMessage()">Submit</button>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+
+function refreshMessages() {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            document.getElementById("messages").innerHTML = xmlhttp.responseText;
+        }
+    };
+    xmlhttp.open("GET", "/chatMessages", true);
+    xmlhttp.send();
+}
+
+function sendMessage(key) {
+    if (key == 'Enter') {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                document.getElementById("messages").innerHTML = xmlhttp.responseText;
+            }
+        };
+        xmlhttp.open("GET", "/submitMessage/" + document.getElementById('message').value, true);
+        xmlhttp.send();
+
+        document.getElementById('message').value = "";
+    }
+}
+
+window.setInterval(function () {
+    refreshMessages();
+}, 1000);
+</script>
+
+{% endblock %}

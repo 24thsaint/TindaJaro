@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<div class="container">
+    <a href="/vendor/mystore"><button type="button" class="btn btn-info"><span class="glyphicon glyphicon-arrow-left"></span>Back</button></a>
+    <div class="center-div panel panel-default">
+        <h2>Delivery Guy Registration</h2>
+        <p>Use this form to register your assigned delivery guy. Remember that your delivery guy can only view pending deliveries under your store.</p>
+{{ form_start(form) }}
+    {{ form_row(form.firstname) }}
+    {{ form_row(form.lastname) }}
+    {{ form_row(form.mobilenumber) }}
+    {{ form_row(form.homeaddress) }}
+    {{ form_row(form.username) }}
+    {{ form_row(form.email) }}
+    {{ form_row(form.plainPassword.first) }}
+    {{ form_row(form.plainPassword.second) }}
+
+    <button type="submit" class="btn btn-primary" value="Register!"><span class="glyphicon glyphicon-ok"></span> Register!</button>
+    <button type="reset" class="btn btn-warning"><span class="glyphicon glyphicon-remove"></span> Clear Form</button>
+{{ form_end(form) }}
+    </div>
+</div>
+
+{% endblock %}

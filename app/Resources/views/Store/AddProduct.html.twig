@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<a href="/vendor/mystore"><button type="button" class="btn btn-info"><span class="glyphicon glyphicon-arrow-left"></span>Back</button></a>
+<center><h2>Add Product Form</h2></center>
+<div class="center-div panel panel-default" id="create-listing">
+    {{ form_start(form) }}
+    {{ form_row(form.productName) }}
+    {{ form_row(form.productQuantity) }}
+    {{ form_row(form.productPrice) }}
+    {{ form_row(form.productDescription) }}
+    {{ form_row(form.productImage) }}
+    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span>Add Product</button>
+    <button type="reset" class="btn btn-warning"><span class="glyphicon glyphicon-remove"></span>Clear Form</button>
+    {{ form_end(form) }}
+</div>
+
+{% endblock %}

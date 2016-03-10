@@ -1,0 +1,148 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container">
+
+    {% for flashMessage in app.session.flashbag.get('notice') %}
+    <div class="alert alert-success">
+        {{ flashMessage }}
+    </div>
+    <hr />
+    {% endfor %}
+
+    {% for flashMessage in app.session.flashbag.get('error') %}
+    <div class="alert alert-danger">
+        {{ flashMessage }}
+    </div>
+    <hr />
+    {% endfor %}
+
+    <div id="store-name">
+        <h1>{{ storename }}</h1>
+        <i>{{ storedescription }}</i>
+    </div>
+
+    <div id="functional-buttons">
+        {% if not isOpen %}
+        <a class="btn btn-primary" data-toggle="modal" data-target="#statusChangeModal" href="#">Open Store</a>
+
+        <div id="statusChangeModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Open Store</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p><b>Are you sure that you want to open your store?</b></p>
+                        <p>Please review your store details before opening.<br>
+                            <br>
+                            Your store name, description, and the items you registered for sale <br>
+                            will be publicly visible until you decide to close your store<br>
+                            at a later time.
+                            <br>
+                        </p>
+                        <a href="/vendor/store-open" class="btn btn-warning">Yes, Open My Store!</a>
+                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <a class="btn btn-warning" data-toggle="modal" data-target="#statusChangeModal" href="#">Close Store</a>
+
+        <div id="statusChangeModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Open Store</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p><b>Are you sure that you want to close your store?</b></p>
+                        <br>
+                        <p>
+                        Your store name, description, and the items you registered for sale <br>
+                        will be <b>not be visible</b> until you decide to open your store again.<br>
+                        <br>
+                        </p>
+                    <a href="/vendor/store-close" class="btn btn-warning">Yes, Close My Store!</a>
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- edit store ====================== -->
+    <a class="btn btn-primary" data-toggle="modal" data-target="#detailChangeModal" href="#" id="edit-store">Edit Store Details</a>
+
+    <div id="detailChangeModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Store Details</h4>
+                </div>
+                <div class="modal-body">
+
+                    {{ form_start(form) }}
+
+                    {{ form_label(form.storename) }}
+                    {{ form_errors(form.storedescription) }}
+                    {{ form_widget(form.storename, {attr: {value: storename}}) }}
+                    <br />
+                    {{ form_label(form.storedescription) }}
+                    {{ form_errors(form.storedescription) }}
+                    {{ form_widget(form.storedescription, {'value': storedescription}) }}
+                    <br />
+                    {{ form_label(form.storeimage) }}
+                    {{ form_errors(form.storeimage) }}
+                    {{ form_widget(form.storeimage) }}
+
+                    <br />
+                    <button type="submit" class="btn btn-primary" value="Save Changes"><span class="glyphicon glyphicon-ok"></span> Save Changes</button>
+                    <button type="reset" class="btn btn-default"  data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
+                    {{ form_end(form) }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ================================= -->
+
+    <a href="/vendor/add-product" id="add-new-product" class="btn btn-primary">Add New Product</a>
+    <a href="/vendor/view-pending" class="btn btn-primary">View PENDING Orders</a>
+    <a href="/shipments/view" class="btn btn-primary">View ALL Orders</a>
+    <a href="/vendor/delivery-guy-registration" class="btn btn-primary">Delivery Guy Registration</a>
+</div>
+
+<div id="store-products">
+    <center><h3>Current Products</h3></center>
+
+    <hr />
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Product name</th>
+                    <th>Quantity Left</th>
+                    <th>Price</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td><a href="/product/view/{{ product.productId }}">{{ product.productname }}</a></td>
+                    <td>{{ product.productquantity }}</td>
+                    <td>{{ product.productprice }}</td>
+                    <td><a href="/vendor/edit/{{ product.productId }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></td>
+                    <td><a href="/vendor/delete-product/{{ product.productId }}"><span class="glyphicon glyphicon-remove"></span> Delete</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+{% endblock %}

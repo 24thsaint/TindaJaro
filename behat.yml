@@ -1,0 +1,16 @@
+default:
+    extensions:
+        Behat\MinkExtension:
+            base_url: http://localhost:8000/
+            selenium2: ~
+            sessions:
+                default:
+                  symfony2: ~
+        Behat\Symfony2Extension: ~
+    suites:
+        default:
+            contexts:
+                - FeatureContext:
+                    session:   '@session'
+    framework:
+        validation: { enabled: true, enable_annotations: true }

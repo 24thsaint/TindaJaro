@@ -1,0 +1,95 @@
+.center-div {
+	margin: 0px auto;
+	margin-top: 5%;
+	padding: 10px;
+}
+
+#footer {
+	margin-top: 5%;
+}
+
+#login {
+	width: 300px;
+}
+
+#account-type {
+	width: 360px;
+}
+
+#registration-panel {
+	width: 360px;
+}
+
+#detail-table {
+	padding: 0px;
+}
+
+#create-listing {
+	width: 300px;
+}
+
+table td {
+	word-wrap: break-word;
+}
+
+.vertical-center-child {
+	display: table-cell;
+	vertical-align: middle;
+	width: 33%;
+}
+
+.vertical-center-parent {
+	display: table;
+}
+
+#logo {
+	width: 50%;
+}
+
+#product-price {
+	color: green;
+}
+
+#product-image-preview {
+	height:350px;
+}
+
+#stocks {
+	color: green;
+}
+
+.preview-thumbnail {
+	height: 100px;
+	width: 100px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.hover-effect:hover {
+	background-color: rgb(221, 221, 221);
+}
+
+#table-display-fix {
+	border-style: solid;
+	padding: 10px;
+}
+
+ul > li:hover {
+	background-color: rgb(221, 221, 221);
+}
+
+#messages-pane {
+	margin-left: 5%;
+	margin-right: 5%;
+	word-wrap: break-word;
+}
+
+#messages {
+	height:300px;
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+#chatter {
+	display: inline;
+}

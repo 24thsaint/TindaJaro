@@ -1,0 +1,40 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
+/**
+* @ORM\Entity
+* @ORM\Table(name="app_ratings")
+*/
+class Rating
+{
+    /**
+    * @ORM\Id
+    * @ORM\Column(type="integer")
+    * @ORM\GeneratedValue(strategy="AUTO")
+    */
+    private $ratingId;
+
+    /**
+    * @ORM\Column(type="integer")
+    * @ORM\OneToOne(targetEntity="AppBundle\Entity\User")
+    */
+    private $customerId;
+
+    /**
+    * @ORM\Column(type="integer")
+    * @ORM\OneToMany(targetEntity="AppBundle\Entity\Store")
+    */
+    private $storeId;
+
+    /**
+    * @ORM\Column(type="integer")
+    * @Assert\GreaterThanOrEqual(value=0)
+    * @Assert\LessThanOrEqual(value=5)
+    */
+    private $rating;
+}

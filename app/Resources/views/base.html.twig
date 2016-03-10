@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    {% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/star-rating.css') }}" media="all" type="text/css"/>
+    {% endblock %}
+
+    {% block javascripts %}
+    <script src="{{ asset('js/jquery.min.js') }}"></script>
+    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('js/script.js') }}"></script>
+    <script src="{{ asset('js/star-rating.js') }}" type="text/javascript"></script>
+    {% endblock %}
+
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+</head>
+<body>
+
+    {% if app.user %}
+    <div id="logo-above-navigation">
+        <img id="logo" src="{{ asset('images/logo.png') }}" alt="logo"/>
+    </div>
+
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">TindaJaro</a>
+            </div>
+            <div>
+                <ul class="nav navbar-nav navigation-hover-effect">
+                    {% if app.user.memberType=='ROLE_MEMBER' %}
+                    <li ><a href="/overview" id="overview">Overview</a></li>
+                    <li ><a href="/browse/stores" id="browse-stores">Browse Stores</a></li>
+                    <li ><a href="/transaction-history" id="transaction-history">Transaction History</a></li>
+                    <li ><a href="/vendor/mystore" id="mystore">My Store</a></li>
+                    <li ><a href="/chat" id="chat">Chat</a></li>
+                    {% endif %}
+                    {% if app.user.memberType=='ROLE_DELIVERY_GUY' %}
+                        <li ><a href="/overview">Overview</a></li>
+                        <li ><a href="/shipments/view">Pending Deliveries</a></li>
+                    {% endif %}
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    {% if app.user.memberType=='ROLE_MEMBER' %}
+                    <li ><a href="/cart"><span class="glyphicon glyphicon-shopping-cart"></span> Cart</a></li>
+                    <li ><a href="#"><span class="glyphicon glyphicon-user"></span> Edit Account</a></li>
+                    {% endif %}
+                    <li ><a href="/logout" id="logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% endif %}
+
+    {% if not app.user %}
+    <div id="index-logo-container">
+        <a href="/"><img id="logo" src="{{ asset('images/logo.png') }}" /></a>
+    </div>
+    {% endif %}
+
+    {% block body %}
+    {% endblock %}
+
+    {% set currentYear = "now"|date("Y") %}
+
+    {% block footer %}
+    <div id="footer">
+        <hr />
+        <center>
+            <p>TindaJaro&copy; 2015-{{ currentYear }}, All Rights Reserved.</p>
+            <p>
+                <a href="#">About Us</a>
+                |
+                <a href="#">Mission</a>
+                |
+                <a href="#">Vision</a>
+                |
+                <a href="#">Partners</a>
+                |
+                <a href="#">Contact Us</a>
+            </p>
+        </center>
+    </div>
+    {% endblock %}
+
+
+</body>
+</html>

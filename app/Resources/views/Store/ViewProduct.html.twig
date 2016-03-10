@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <div class="panel panel-default" id="product_view">
+
+        <table class="table table-hover">
+            <tr>
+                <td rowspan="7">
+                    <center>
+                        <img id="product-image-preview" src="{{ asset('/uploads/products/images/'~ product.productImage ) }}" />
+                    </center>
+                </td>
+            </tr>
+            <tr>
+                <td><h1>{{ product.productName }}</h1></td>
+            </tr>
+            <tr>
+                <td><p><b>Description:</b> {{ product.productDescription }}</p></td>
+            </tr>
+            <tr>
+                <td><p><b>Price:</b> PHP {{ product.productPrice }}</p></td>
+            </tr>
+            <tr>
+                <td><p><b>Stocks:</b> <span id="stocks">{{ product.productQuantity }} available</span></p></td>
+            </tr>
+            {% if userId == vendorId %}
+            <!-- Do nothing -->
+            <tr>
+                <td>
+                    <div class="alert alert-success">This is how your customers see your product</div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td>
+                    <form id="form" name="form" role="form" class="form-inline" method="POST" action="/cart/add/{{ vendorId }}/{{ product.productId }}">
+                        <div class="form-group">
+                            {% for flashMessage in app.session.flashbag.get('notice') %}
+                            <div class="alert alert-danger">
+                                {{ flashMessage }}
+                            </div>
+                            {% endfor %}
+                            <label for="quantity">Quantity:</label>
+                            <input type="text" class="form-control" name="quantity" id="quantity" value="1" />
+                            <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-shopping-cart"></span> Add To Cart</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button type="button" data-toggle="modal" data-target="#vendorContactModal" class="btn btn-default">Contact Vendor</button>
+                </td>
+            </tr>
+            {% endif %}
+
+        </table>
+
+        <!-- modal definitions -->
+        <div id="vendorContactModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Contact Vendor</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        Vendor Name: <b>{{ vendorName }} </b><br />
+                        Vendor Address: <b>{{ vendorAddress }} </b><br />
+                        Vendor Contact Number: <b>{{ vendorMobileNumber }} </b><br />
+                        <br />
+                        <button type="reset" class="btn btn-success"  data-dismiss="modal"><span class="glyphicon glyphicon-check"></span> Got It!</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end modal definitions -->
+</div>
+
+{% endblock %}
