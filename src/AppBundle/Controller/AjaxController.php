@@ -51,12 +51,19 @@ class AjaxController extends Controller {
     * @Route("/submitMessage/{content}")
     */
     public function sendChatMessage($content) {
+        if ($content=='') {
+            return false;
+        }
 
         $message = new Message();
         $now = new \DateTime();
         $message->setMessageDate($now);
         $message->setMessageSender($this->getUser()->getFirstName() . ' ' . $this->getUser()->getLastName());
-        $message->setMessageContent($content);
+
+        $c = htmlspecialchars($content);
+        $c = chop($c);
+
+        $message->setMessageContent($c);
         $message->setMessageColor($this->getRandomColor());
         $em = $this->getDoctrine()->getManager();
         $em->persist($message);

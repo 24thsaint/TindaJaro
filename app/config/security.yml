@@ -24,11 +24,16 @@ security:
         - { path: ^/vendor*, roles: ROLE_MEMBER}
         - { path: ^/browse*, roles: ROLE_MEMBER}
         - { path: ^/cart*, roles: ROLE_MEMBER}
+        - { path: ^/chat*, roles: ROLE_MEMBER}
         - { path: ^/product*, roles: ROLE_MEMBER}
         - { path: ^/transaction-history, roles: ROLE_MEMBER}
         - { path: ^/logout, roles: IS_AUTHENTICATED_FULLY}
         - { path: ^/shipments/view, roles: ROLE_DELIVERY_GUY}
         - { path: ^/shipments/delivered/*, roles: ROLE_DELIVERY_GUY}
+        - { path: ^/notifications*, roles: ROLE_DELIVERY_GUY}
+        - { path: ^/submitMessage/*, roles: ROLE_MEMBER}
+        - { path: ^/chatMessages*, roles: ROLE_MEMBER}
+
 
     firewalls:
         # disables authentication for assets and the profiler, adapt it according to your needs

@@ -12,7 +12,7 @@
     </div>
 
     <div id="chatter">
-        <input type="text" name="message" id="message" class="form-control wide-box" maxlength=255 onkeydown="sendMessage(event.key)" autocomplete="off" />
+        <input type="text" name="message" id="message" class="form-control wide-box pull-left" maxlength=255 onkeydown="sendMessage(event.key)" autocomplete="off"  data-toggle="tooltip" title="There was an error in sending your message, please try again." />
         <button type="button" class="btn btn-primary pull-right" onclick="sendMessage()">Submit</button>
     </div>
 
@@ -39,7 +39,20 @@ function sendMessage(key) {
                 document.getElementById("messages").innerHTML = xmlhttp.responseText;
             }
         };
-        xmlhttp.open("GET", "/submitMessage/" + document.getElementById('message').value, true);
+
+        var content = (document.getElementById('message').value).replace(/\//g, ""); // not working
+
+        if (content.replace(/ /g, "") == '') {
+            $('#message').tooltip("show");
+
+            window.setTimeout(function() {
+                $('#message').tooltip("hide");
+            }, 3000);
+
+            return false;
+        }
+
+        xmlhttp.open("GET", "/submitMessage/" + content, true);
         xmlhttp.send();
 
         document.getElementById('message').value = "";

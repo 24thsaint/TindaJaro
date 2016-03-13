@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<center><h2>Edit Account Details</h2></center>
+
+{% for flashMessage in app.session.flashbag.get('notice') %}
+<div class="alert alert-success">
+    {{ flashMessage }}
+</div>
+<hr />
+{% endfor %}
+
+{% for flashMessage in app.session.flashbag.get('error') %}
+<div class="alert alert-danger">
+    {{ flashMessage }}
+</div>
+<hr />
+{% endfor %}
+
+<div class="container">
+
+<div class="col-md-6 center-div panel panel-default" id="edit-information">
+    {{ form_start(form) }}
+
+    {{ form_label(form.firstname) }}
+    {{ form_errors(form.firstname) }}
+    {{ form_widget(form.firstname, {attr: {value: firstname}}) }}
+    <br />
+    {{ form_label(form.lastname) }}
+    {{ form_errors(form.lastname) }}
+    {{ form_widget(form.lastname, {attr: {value: lastname}}) }}
+    <br />
+    {{ form_label(form.mobilenumber) }}
+    {{ form_errors(form.mobilenumber) }}
+    {{ form_widget(form.mobilenumber, {attr: {value: mobilenumber}}) }}
+    <br />
+    {{ form_label(form.homeaddress) }}
+    {{ form_errors(form.homeaddress) }}
+    {{ form_widget(form.homeaddress, {attr: {value: homeaddress}}) }}
+    <br />
+    {{ form_label(form.email) }}
+    {{ form_errors(form.email) }}
+    {{ form_widget(form.email, {attr: {value: email}}) }}
+    <br />
+    {{ form_label(form.plainPassword) }}
+    {{ form_errors(form.plainPassword) }}
+    {{ form_widget(form.plainPassword) }}
+    <br />
+
+
+    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-edit"></span> Save Changes</button>
+    <button type="reset" class="btn btn-warning"><span class="glyphicon glyphicon-remove"></span> Clear Form</button>
+    {{ form_end(form) }}
+</div>
+
+<div class="col-md-6 center-div panel panel-default" id="edit-password">
+    {{ form_start(passwordForm) }}
+
+    {{ form_row(passwordForm.password) }}
+    {{ form_row(passwordForm.plainPassword.first) }}
+    {{ form_row(passwordForm.plainPassword.second) }}
+    {{ form_row(passwordForm._token) }}
+
+    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-edit"></span> Change Password</button>
+    {{ form_end(form) }}
+</div>
+
+</div>
+
+{% endblock %}

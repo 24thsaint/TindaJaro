@@ -4,12 +4,9 @@
 
 <div class="container">
     <h1><img class="preview-thumbnail img-circle" src="{{ asset('/uploads/stores/images/'~storeimage) }}" /> {{ storename }}</h1>
-    <div class="inline">
         <div id="ratingNotification" class="alert alert-success fade in" style="display: none;">Your rating was successfully acknowledged!</div>
         <label for="input-7-xs" class="control-label">Store Rating:</label>
-        <input id="input-7-xs" class="rating rating-loading" showClear="false" value="{{ storeRating }}" data-min="0" data-max="5" data-step="1" data-size="xs" />
-    </div>
-
+        <input id="input-7-xs" class="rating rating-loading" value="{{ storeRating }}" data-min="0" data-max="5" data-step="1" data-size="xs" />
     <hr />
     {% for product in products %}
     <a href="/product/view/{{ product.productId }}">
@@ -38,7 +35,7 @@
 
                 window.setTimeout(
                     function() {
-                        $('#ratingNotification').alert("close");
+                        $('#ratingNotification').hide();
                     }, 2000
                 );
             });

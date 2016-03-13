@@ -13,6 +13,15 @@ use AppBundle\Controller\AjaxController;
 class NavigationController extends Controller {
 
     /**
+    * @Route("/test")
+    */
+    public function test() {
+        return $this->render(
+            'Homepage/Test.html.twig'
+        );
+    }
+
+    /**
     * @Route("/overview")
     */
     public function overviewAction() {

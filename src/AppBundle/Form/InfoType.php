@@ -11,7 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 
-class UserType extends AbstractType
+class InfoType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -21,22 +21,17 @@ class UserType extends AbstractType
             ->add('mobilenumber', NumberType::class, array('label' => 'Mobile Number'))
             ->add('homeaddress', TextType::class, array('label' => 'Home Address'))
             ->add('email', EmailType::class, array('label' => 'Email'))
-            ->add('username', TextType::class, array('label' => 'Username'))
-            ->add('plainPassword', RepeatedType::class, array(
-                'type' => PasswordType::class,
-                'first_options'  => array('label' => 'Password'),
-                'second_options' => array('label' => 'Repeat Password'),
-            )
-        );
+            ->add('plainPassword', PasswordType::class, array('label' => 'Current Password'));
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
             'data_class' => 'AppBundle\Entity\User',
-            'validation_groups' =>  array('registration', 'userinfo', 'passwordinfo')
+            'validation_groups' =>  array('userinfo')
         ));
     }
+
 }
 
 ?>

@@ -9,9 +9,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity
- * @UniqueEntity(fields="email", message="Email already taken")
- * @UniqueEntity(fields="username", message="Username already taken")
- * @UniqueEntity(fields="mobilenumber", message="Mobile number is already linked to an account!")
+ * @UniqueEntity(fields="email", message="Email already taken", groups={"registration"})
+ * @UniqueEntity(fields="username", message="Username already taken", groups={"registration"})
+ * @UniqueEntity(fields="mobilenumber", message="Mobile number is already linked to an account!", groups={"registration"})
  * @ORM\Table(name="app_users")
  */
 class User implements UserInterface
@@ -25,20 +25,20 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
-     * @Assert\Email()
+     * @Assert\NotBlank(groups={"userinfo"})
+     * @Assert\Email(groups={"userinfo"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"registration"})
      */
     private $username;
 
     /**
-     * @Assert\NotBlank()
-     * @Assert\Length(min="6", max = "32", maxMessage="Password should only contain 6 to 32 characters.", minMessage="Password should only contain 6 to 32 characters.")
+     * @Assert\NotBlank(groups={"registration", "passwordinfo"})
+     * @Assert\Length(min="6", max = "32", maxMessage="Password should only contain 6 to 32 characters.", minMessage="Password should only contain 6 to 32 characters.", groups={"registration", "passwordinfo"})
      */
     private $plainPassword;
 
@@ -46,32 +46,32 @@ class User implements UserInterface
      * The below length depends on the "algorithm" you use for encoding
      * the password, but this works well with bcrypt.
      *
-     * @ORM\Column(type="string", length=64)
+     * @ORM\Column(type="string", length=255)
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"userinfo"})
      */
     private $firstName;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"userinfo"})
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="string", unique=true)
-     * @Assert\NotBlank()
-     * @Assert\Length(min="10", max = "12", maxMessage="Please enter a valid mobile number.", minMessage="Please enter a valid mobile number.")
+     * @Assert\NotBlank(groups={"userinfo"})
+     * @Assert\Length(min="10", max = "12", maxMessage="Please enter a valid mobile number.", minMessage="Please enter a valid mobile number.", groups={"userinfo"})
      */
     private $mobilenumber;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"userinfo"})
      */
     private $homeaddress;
 
@@ -297,4 +297,5 @@ class User implements UserInterface
     {
         return $this->memberType;
     }
+
 }
