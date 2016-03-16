@@ -100,7 +100,7 @@
         {% endif %}
 
         {% if app.user.memberType=='ROLE_DELIVERY_GUY' %}
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#deliveryModal{{ groupedOrder['group']['customerId'] }}"><span class="glyphicon glyphicon-ok"></span> I have delivered this order!</button>
+        <a type="button" href="#" class="btn btn-primary" data-toggle="modal" data-target="#deliveryModal{{ groupedOrder['group']['customerId'] }}"><span class="glyphicon glyphicon-ok"></span> I have delivered this order!</a>
 
         <div id="deliveryModal{{ groupedOrder['group']['customerId'] }}" class="modal fade" role="dialog">
             <div class="modal-dialog">
