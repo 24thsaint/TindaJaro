@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use AppBundle\Entity\Order;
 use Symfony\Component\Validator\Constraints\Date;
 
-class OrderController extends Controller
+class CheckoutController extends Controller
 {
     /**
     * @Route("/cart")
