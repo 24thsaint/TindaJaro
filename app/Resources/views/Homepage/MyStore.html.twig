@@ -93,6 +93,10 @@
                     {{ form_errors(form.storedescription) }}
                     {{ form_widget(form.storedescription, {'value': storedescription}) }}
                     <br />
+                    {{ form_label(form.minimumpurchaseprice) }}
+                    {{ form_errors(form.minimumpurchaseprice) }}
+                    {{ form_widget(form.minimumpurchaseprice, {attr: {value: minimumpurchaseprice}}) }}
+                    <br />
                     {{ form_label(form.storeimage) }}
                     {{ form_errors(form.storeimage) }}
                     {{ form_widget(form.storeimage) }}

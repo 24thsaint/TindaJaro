@@ -33,7 +33,7 @@ class Product
     private $productName;
 
     /**
-    * @ORM\Column(type="integer", length=255)
+    * @ORM\Column(type="decimal", precision=10, scale=2)
     * @Assert\GreaterThanOrEqual(value=0)
     * @Assert\NotBlank(message="Product Price should not be blank!")
     */
@@ -217,5 +217,29 @@ class Product
     public function getStoreId()
     {
         return $this->storeId;
+    }
+
+    /**
+     * Set isActive
+     *
+     * @param boolean $isActive
+     *
+     * @return Product
+     */
+    public function setActive($isActive)
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    /**
+     * Get isActive
+     *
+     * @return boolean
+     */
+    public function isActive()
+    {
+        return $this->isActive;
     }
 }

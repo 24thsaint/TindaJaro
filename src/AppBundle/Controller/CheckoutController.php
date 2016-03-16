@@ -10,10 +10,11 @@ use Symfony\Component\Validator\Constraints\Date;
 
 class CheckoutController extends Controller
 {
+
     /**
     * @Route("/cart")
     */
-    public function orderAction() {
+    public function orderAction($checker = false) {
         $orderRepository = $this->getDoctrine()->getRepository("AppBundle:Order");
         $order = $orderRepository->findBycustomerId($this->getUser()->getId());
 
@@ -33,11 +34,18 @@ class CheckoutController extends Controller
         }
 
         $productRepository = $this->getDoctrine()->getRepository("AppBundle:Product");
+        $storeRepository = $this->getDoctrine()->getRepository("AppBundle:Store");
+
         $orderItems = array();
         $total = 0;
 
+        $purchasesPerVendor = array();
+        $minimumPurchasePrice = array();
+
         foreach ($order as $orderData) {
             $product = $productRepository->findOneByproductId($orderData->getProductId());
+            $store = $storeRepository->findOneByvendorId($orderData->getVendorId());
+
             $productName = $product->getProductName();
             $productDescription = $product->getProductDescription();
             $productPrice = $product->getProductPrice();
@@ -45,6 +53,7 @@ class CheckoutController extends Controller
             $quantity = $orderData->getQuantity();
 
             $arrayData = array();
+            $arrayData['storeName'] = $store->getStoreName();
             $arrayData['productName'] = $productName;
             $arrayData['productDescription'] = $productDescription;
             $arrayData['productPrice'] = $productPrice;
@@ -52,6 +61,37 @@ class CheckoutController extends Controller
             $arrayData['productId'] = $productId;
             $orderItems[] = $arrayData;
             $total += $productPrice * $quantity;
+
+            $vendorId = $orderData->getVendorId();
+
+            if (!isset($purchasesPerVendor[$vendorId])) {
+                $purchasesPerVendor[$vendorId] = $total;
+            } else {
+                $purchasesPerVendor[$vendorId] += $total;
+            }
+
+            $minimumPurchasePrice[$vendorId] = $store->getMinimumPurchasePrice();
+        }
+
+        $ordersBelowMinimumPurchasePrice = array();
+
+        foreach ($purchasesPerVendor as $key => $value) {
+            $minimum = $minimumPurchasePrice[$key];
+
+            $data = array();
+
+            if ($value < $minimum) {
+                $store = $storeRepository->findOneByvendorId($key);
+                $data['vendorId'] = $key;
+                $data['storeName'] = $store->getStoreName();
+                $data['minimumPurchasePrice'] = $minimum;
+                $data['totalPurchases'] = $value;
+                $ordersBelowMinimumPurchasePrice[] = $data;
+                $checkoutEnabled = 'disabled';
+                if ($checker == true) {
+                    return 'FAILED';
+                }
+            }
         }
 
         return $this->render(
@@ -59,6 +99,7 @@ class CheckoutController extends Controller
             array(
                 'orderItems' => $orderItems,
                 'total' => $total,
+                'ordersBelowMinimumPurchasePrice' => $ordersBelowMinimumPurchasePrice,
                 'checkoutEnabled' => $checkoutEnabled
             )
         );
@@ -147,6 +188,11 @@ class CheckoutController extends Controller
 
         $em->flush();
 
+        $this->get('session')->getFlashBag()->add(
+            'notice',
+            'Cart has been updated!'
+        );
+
         return $this->redirect('/cart');
     }
 
@@ -154,6 +200,12 @@ class CheckoutController extends Controller
     * @Route("/cart/checkout")
     */
     public function checkoutAction() {
+
+        if ($this->orderAction(true) == 'FAILED') {
+            return $this->redirect("/cart");
+            exit();
+        }
+
         $em = $this->getDoctrine()->getManager();
         $query = $em->createQuery(
             '

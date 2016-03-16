@@ -46,6 +46,12 @@ class Store
     */
     private $storeImage;
 
+    /**
+    * @ORM\Column(type="decimal", precision=10, scale=2)
+    * @Assert\GreaterThanOrEqual(value=0)
+    */
+    private $minimumPurchasePrice;
+
     // other properties and methods
     //* @Assert\File(mimeTypes={ "image/jpeg" })
     //* @Assert\File(maxSize="6000000")
@@ -179,5 +185,29 @@ class Store
     public function getStoreImage()
     {
         return $this->storeImage;
+    }
+
+    /**
+     * Set minimumPurchasePrice
+     *
+     * @param string $minimumPurchasePrice
+     *
+     * @return Store
+     */
+    public function setMinimumPurchasePrice($minimumPurchasePrice)
+    {
+        $this->minimumPurchasePrice = $minimumPurchasePrice;
+
+        return $this;
+    }
+
+    /**
+     * Get minimumPurchasePrice
+     *
+     * @return string
+     */
+    public function getMinimumPurchasePrice()
+    {
+        return $this->minimumPurchasePrice;
     }
 }

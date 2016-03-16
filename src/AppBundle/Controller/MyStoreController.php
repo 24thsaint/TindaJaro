@@ -36,6 +36,7 @@ class MyStoreController extends Controller {
         if ($form->isSubmitted() && $form->isValid()) {
             $store->setStoreName($storeTmp->getStoreName());
             $store->setStoreDescription($storeTmp->getStoreDescription());
+            $store->setMinimumPurchasePrice($storeTmp->getMinimumPurchasePrice());
 
             // handle image upload
             if ($storeTmp->getStoreImage()) {
@@ -72,6 +73,7 @@ class MyStoreController extends Controller {
                 'products' => $products,
                 'storename' => $store->getStoreName(),
                 'storedescription' => $store->getStoreDescription(),
+                'minimumpurchaseprice' => $store->getMinimumPurchasePrice(),
                 'isOpen' => $store->getIsStoreStatusOpen(),
                 'form' => $form->createView()
             )

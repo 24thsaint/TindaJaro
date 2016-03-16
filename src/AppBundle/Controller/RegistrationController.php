@@ -36,6 +36,7 @@ class RegistrationController extends Controller {
             $store->setIsStoreStatusOpen(false);
             $store->setVendorId($user->getId());
             $store->setStoreDescription("Please, configure your store name and description by clicking on EDIT STORE NAME!");
+            $store->setMinimumPurchasePrice(0);
             $store->setStoreImage('storeDefault.jpeg');
 
             $em->persist($store);
