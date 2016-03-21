@@ -37,6 +37,7 @@ class Rating
     private $rating;
 
 
+
     /**
      * Get id
      *
@@ -72,50 +73,50 @@ class Rating
     }
 
     /**
-     * Set customerId
+     * Set customer
      *
-     * @param \AppBundle\Entity\Member $customerId
+     * @param \AppBundle\Entity\Member $customer
      *
      * @return Rating
      */
-    public function setCustomerId(\AppBundle\Entity\Member $customerId = null)
+    public function setCustomer(\AppBundle\Entity\Member $customer = null)
     {
-        $this->customerId = $customerId;
+        $this->customer = $customer;
 
         return $this;
     }
 
     /**
-     * Get customerId
+     * Get customer
      *
      * @return \AppBundle\Entity\Member
      */
-    public function getCustomerId()
+    public function getCustomer()
     {
-        return $this->customerId;
+        return $this->customer;
     }
 
     /**
-     * Set storeId
+     * Set store
      *
-     * @param \AppBundle\Entity\Store $storeId
+     * @param \AppBundle\Entity\Store $store
      *
      * @return Rating
      */
-    public function setStoreId(\AppBundle\Entity\Store $storeId = null)
+    public function setStore(\AppBundle\Entity\Store $store = null)
     {
-        $this->storeId = $storeId;
+        $this->store = $store;
 
         return $this;
     }
 
     /**
-     * Get storeId
+     * Get store
      *
      * @return \AppBundle\Entity\Store
      */
-    public function getStoreId()
+    public function getStore()
     {
-        return $this->storeId;
+        return $this->store;
     }
 }

@@ -22,12 +22,12 @@ class Rating
     /**
     * @ORM\OneToOne(targetEntity="Member")
     */
-    private $customerId;
+    private $customer;
 
     /**
-    * @ORM\ManyToOne(targetEntity="Store")
+    * @ORM\ManyToOne(targetEntity="Store", inversedBy="ratings", cascade="ALL")
     */
-    private $storeId;
+    private $store;
 
     /**
     * @ORM\Column(type="integer")
@@ -35,5 +35,6 @@ class Rating
     * @Assert\LessThanOrEqual(value=5)
     */
     private $rating;
+
 
 }

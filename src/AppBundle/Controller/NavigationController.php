@@ -102,56 +102,31 @@ class NavigationController extends Controller {
         );
     }
 
-    protected function getStoreRating($storeId) {
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery('SELECT r FROM AppBundle:Rating r WHERE r.storeId=:storeId')->setParameter('storeId', $storeId);
-        $result = $query->getResult();
-
-        $resultCount = count($result);
-
-        if ($resultCount <= 0) {
-            return 0;
-        }
-
-        $total = 0;
-
-        foreach ($result as $rate) {
-            $total += $rate->getRating();
-        }
-
-        $averageRate = $total / $resultCount;
-        return $averageRate;
-    }
-
     /**
-    * @Route("/rate/{storeId}/{rating}")
+    * @Route("/rate/{store}/{rating}")
     */
-    public function rateAction($storeId, $rating) {
+    public function rateAction(Store $store, $rating) {
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery(
-        'SELECT r FROM AppBundle:Rating r WHERE r.customerId=:customerId AND r.storeId=:storeId'
-        )->setParameter("customerId", $this->getUser()->getId())->setParameter("storeId", $storeId);
-        $resultCount = 0;
+        $ratings = $store->getRatings();
 
-        try {
-            $result = $query->getSingleResult();
-            $resultCount = count($rating);
-        } catch(\Doctrine\ORM\NoResultException $e) {
-            $resultCount = 0;
-        }
+        $ratingRepository = $this->getDoctrine()->getRepository("AppBundle:Rating");
+        $existingRateRecord = $ratingRepository->findOneBy(
+            array('customer' => $this->getUser(), 'store' => $store)
+        );
 
-        if ($resultCount > 0) {
-            $result->setRating($rating);
+        if ($existingRateRecord != null) {
+            $existingRateRecord->setRating($rating);
         } else {
             $newRating = new Rating();
-            $newRating->setStoreId($storeId);
+            $newRating->setCustomer($this->getUser());
+            $newRating->setStore($store);
             $newRating->setRating($rating);
-            $newRating->setCustomerId($this->getUser()->getId());
             $em->persist($newRating);
         }
+
         $em->flush();
 
-        return new Response($this->getStoreRating($storeId));
+        return new Response($rating);
     }
 
     /**
