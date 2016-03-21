@@ -8,54 +8,46 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use AppBundle\Form\ProductType;
 use AppBundle\Form\UserType;
 use AppBundle\Entity\Product;
-use AppBundle\Entity\User;
+use AppBundle\Entity\Member;
+use AppBundle\Entity\DeliveryGuy;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\FileSystem\Exception\IOExceptionInterface;
 
+/**
+* @Route("/vendor")
+*/
 class VendorController extends Controller {
 
     /**
-    * @Route("/vendor/add-product")
+    * @Route("/add-product")
     */
     public function addProductAction(Request $request) {
         $product = new Product();
-        $product->setStoreId($this->getUser()->getStoreId());
-        $product->setActive(true);
+        $product->setIsActive(true);
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // handle image upload
-            if ($product->getProductImage()) {
-                $file = $product->getProductImage();
-                $fileName = md5(uniqid()).'.'.$file->guessExtension();
-                $imagesDir = $this->container->getParameter('kernel.root_dir').'/../web/uploads/products/images';
-
-                $this->deleteFile($imagesDir.'/'.$product->getProductImage());
-
-                $product->setProductImage($fileName);
-                // upload image to server
-                $file->move($imagesDir, $fileName);
+            if ($product->getImage()) {
+                $file = $product->getImage();
+                $directory = $this->container->getParameter('kernel.root_dir').'/../web/uploads/products/images';
+                $product->overwriteImage($directory, $file);
             } else {
-                $product->setProductImage('productDefault.jpeg');
+                $product->setImage('productDefault.jpeg');
             }
-            // handler end
 
-            $product->setStoreId($this->getUser()->getStoreId());
-
-            // persist the image location
+            $product->setStore($this->getUser()->getStore());
             $em = $this->getDoctrine()->getManager();
             $em->persist($product);
-
             $em->flush();
 
             $this->get('session')->getFlashBag()->add(
                 'notice',
-                'Your product '. $product->getProductName() .' was successfully added to your store!'
+                'Your product '. $product->getName() .' was successfully added to your store!'
             );
 
-            return $this->redirect('/vendor/mystore');
+            return $this->redirect('/mystore');
         }
 
         return $this->render(
@@ -66,167 +58,101 @@ class VendorController extends Controller {
         );
     }
 
-    protected function deleteFile($filePath) {
-        $fs = new Filesystem();
-        if ($fs->exists($filePath)) {
-            $fs->remove($filePath);
-        }
-    }
-
     /**
-    * @Route("/vendor/ship/{customerId}")
+    * @Route("/ship/{customer}")
     */
-    public function shipAction($customerId) {
+    public function shipAction(Member $customer) {
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery(
-            '
-            SELECT o FROM AppBundle:Order o WHERE o.customerId=:customerId AND o.vendorId=:vendorId AND o.orderStatus=\'CHECKED-OUT\'
-            '
-        )->setParameter('customerId', $customerId)->setParameter('vendorId', $this->getUser()->getId());
 
-        $orders = $query->getResult();
+        $this->getUser()->getStore()->shipPendingOrders($customer);
+        $em->flush();
 
-        $notice = "The status of Order ";
-
-        foreach ($orders as $order) {
-            $order->setOrderStatus("ACCEPTED BY VENDOR: Being Shipped");
-            $now = new \DateTime();
-            $order->setTransactionDate($now);
-            $em->flush();
-            $notice = $notice . "#" . $order->getOrderId() . " ";
-        }
-
-        $notice = $notice . "has been changed to \"ACCEPTED BY VENDOR: Being Shipped\" successfully!";
+        $notice = "All orders of ". $customer->getFullName() ." have been marked as \"Shipped\" successfully!";
 
         $this->get('session')->getFlashBag()->add(
             'notice',
             $notice
         );
 
-        return $this->redirect('/vendor/view-pending');
+        return $this->redirect('/mystore/view-pending');
     }
 
     /**
-    * @Route("/vendor/edit/{productId}")
+    * @Route("/edit/{productId}")
     */
     public function editProductAction($productId, Request $request) {
         $productRepository = $this->getDoctrine()->getRepository("AppBundle:Product");
-        $oldProduct = $productRepository->findOneByproductId($productId);
+        $oldProduct = $productRepository->findOneByid($productId);
 
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // handle image upload
-            if ($product->getProductImage()) {
-                $file = $product->getProductImage();
-                $fileName = md5(uniqid()).'.'.$file->guessExtension();
-
-                $imagesDir = $this->container->getParameter('kernel.root_dir').'/../web/uploads/products/images';
-
-                if ($oldProduct->getProductImage() != 'productDefault.jpeg') {
-                    $this->deleteFile($imagesDir.'/'.$oldProduct->getProductImage());
-                }
-
-                $oldProduct->setProductImage($fileName);
-                // upload image to server
-                $file->move($imagesDir, $fileName);
+            if ($product->getImage()) {
+                $file = $product->getImage();
+                $directory = $this->container->getParameter('kernel.root_dir').'/../web/uploads/products/images';
+                $oldProduct->overwriteImage($directory, $file);
             }
-
-            // update stuff
-
-            $oldProduct->setProductName($product->getProductName());
-            $oldProduct->setProductQuantity($product->getProductQuantity());
-            $oldProduct->setProductPrice($product->getProductPrice());
-            $oldProduct->setProductDescription($product->getProductDescription());
+            $oldProduct->setName($product->getName());
+            $oldProduct->setQuantity($product->getQuantity());
+            $oldProduct->setPrice($product->getPrice());
+            $oldProduct->setDescription($product->getDescription());
 
             $em = $this->getDoctrine()->getManager();
-
             $em->flush();
 
             $this->get('session')->getFlashBag()->add(
                 'notice',
-                'Your product '. $product->getProductName() .' was successfully edited!'
+                'Your product '. $product->getName() .' was successfully edited!'
             );
 
-            return $this->redirect('/vendor/mystore');
+            return $this->redirect('/mystore');
         }
 
         return $this->render(
             'Store/EditProduct.html.twig',
             array(
                 'form' => $form->createView(),
-                'productName' => $oldProduct->getProductName(),
-                'productQuantity' => $oldProduct->getProductQuantity(),
-                'productPrice' => $oldProduct->getProductPrice(),
-                'productDescription' => $oldProduct->getProductDescription()
+                'product' => $oldProduct
             )
         );
     }
 
     /**
-    * @Route("/vendor/delete-product/{productId}")
+    * @Route("/delete-product/{product}")
     */
-    public function deleteProduct($productId) {
+    public function deleteProduct(Product $product) {
         $em = $this->getDoctrine()->getManager();
 
-        $query = $em->createQuery(
-            '
-            SELECT o FROM AppBundle:Order o WHERE o.productId=:productId AND o.vendorId=:vendorId AND o.orderStatus=\'CHECKED-OUT\'
-            '
-        )->setParameter('productId', $productId)->setParameter('vendorId', $this->getUser()->getId());
+        $orderRepository = $this->getDoctrine()->getRepository("AppBundle:Order");
+        $orders = $orderRepository->findAllPendingOrdersOfAProduct($product);
 
-        $productQuery = $em->createQuery(
-            '
-            SELECT p FROM AppBundle:Product p WHERE p.storeId=:storeId AND p.productId=:productId
-            '
-        )->setParameter('storeId', $this->getUser()->getStoreId())->setParameter('productId', $productId);
-
-        $product = $productQuery->getSingleResult();
-
-        $order = null;
-
-        try {
-            $order = $query->getSingleResult();
-
-            $this->get('session')->getFlashBag()->add(
-                'error',
-                'The product '.$product->getProductName().' still has pending orders, please attend to them first and try again!'
-            );
-        } catch(\Doctrine\ORM\NoResultException $e) {
-
-            $imagesDir = $this->container->getParameter('kernel.root_dir').'/../web/uploads/products/images';
-
-            if ($product->getProductImage() != 'productDefault.jpeg') {
-                $this->deleteFile($imagesDir.'/'.$product->getProductImage());
-            }
-
-            $product->setActive(false);
-
-            // do not remove from database, things go wrong.
-            // $em->remove($product);
-
+        if ($product->remove($orders)) {
             $em->flush();
-
             $this->get('session')->getFlashBag()->add(
                 'notice',
-                'The product '.$product->getProductName().' was successfully removed from your store!'
+                'The product '.$product->getName().' was successfully removed from your store!'
+            );
+        } else {
+            $this->get('session')->getFlashBag()->add(
+                'error',
+                'The product '.$product->getName().' still has pending orders, please attend to them first and try again!'
             );
         }
 
-        return $this->redirect('/vendor/mystore');
+        return $this->redirect('/mystore');
     }
 
 
     /**
-    * @Route("/vendor/shipcancel/{customerId}")
+    * @Route("/shipcancel/{customerId}")
     */
     public function cancelShipmentAction($customerId) {
         $em = $this->getDoctrine()->getManager();
         $query = $em->createQuery(
             '
-            SELECT o FROM AppBundle:Order o WHERE o.customerId=:customerId AND o.vendorId=:vendorId AND o.orderStatus=\'ACCEPTED BY VENDOR: Being Shipped\'
+            SELECT o FROM AppBundle:Order o WHERE o.customerId=:customerId AND o.vendorId=:vendorId AND o.status=\'ACCEPTED BY VENDOR: Being Shipped\'
             '
         )->setParameter('customerId', $customerId)->setParameter('vendorId', $this->getUser()->getId());
 
@@ -235,7 +161,7 @@ class VendorController extends Controller {
         foreach ($orders as $order) {
             $now = new \DateTime();
             $order->setTransactionDate($now);
-            $order->setOrderStatus('CHECKED-OUT');
+            $order->setStatus('CHECKED-OUT');
             $em->flush();
         }
 
@@ -248,13 +174,13 @@ class VendorController extends Controller {
     }
 
     /**
-    * @Route("/vendor/reject/{customerId}")
+    * @Route("/reject/{customerId}")
     */
     public function rejectOrderAction($customerId) {
         $em = $this->getDoctrine()->getManager();
         $query = $em->createQuery(
             '
-            SELECT o FROM AppBundle:Order o WHERE o.customerId=:customerId AND o.vendorId=:vendorId AND o.orderStatus=\'CHECKED-OUT\'
+            SELECT o FROM AppBundle:Order o WHERE o.customerId=:customerId AND o.vendorId=:vendorId AND o.status=\'CHECKED-OUT\'
             '
         )->setParameter('customerId', $customerId)->setParameter('vendorId', $this->getUser()->getId());
 
@@ -263,7 +189,7 @@ class VendorController extends Controller {
         foreach ($orders as $order) {
             $now = new \DateTime();
             $order->setTransactionDate($now);
-            $order->setOrderStatus('REJECTED');
+            $order->setStatus('REJECTED');
             $em->flush();
         }
 
@@ -272,16 +198,15 @@ class VendorController extends Controller {
             'The order was successfully rejected.'
         );
 
-        return $this->redirect('/vendor/view-pending');
+        return $this->redirect('/mystore/view-pending');
     }
 
     /**
-    * @Route("/vendor/delivery-guy-registration")
+    * @Route("/delivery-guy-registration")
     */
     public function deliveryGuyRegistrationAction(Request $request)
     {
-        $user = new User();
-        $user->setMemberType("ROLE_DELIVERY_GUY");
+        $user = new DeliveryGuy($this->getUser());        
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
@@ -289,11 +214,11 @@ class VendorController extends Controller {
             $password = $this->get('security.password_encoder')
                 -> encodePassword($user, $user->getPlainPassword());
             $user->setPassword($password);
-            $user->setStoreId($this->getUser()->getStoreId());
 
             $em = $this->getDoctrine()->getManager();
-
             $em->persist($user);
+
+            $this->getUser()->addDeliveryGuy($user);
 
             $em->flush();
 
@@ -301,45 +226,13 @@ class VendorController extends Controller {
                 'notice',
                 'Your delivery guy ' . $user->getFirstName() . ' was successfully registered!'
             );
-
-            return $this->redirect('/vendor/mystore');
+            return $this->redirect('/mystore');
         }
 
         return $this->render(
             'Store/DeliveryGuyRegistration.html.twig',
             array('form' => $form->createView())
         );
-    }
-
-    /**
-    * @Route("/shipments/delivered/{customerId}")
-    */
-    public function deliveredAction($customerId) {
-        $storeRepository = $this->getDoctrine()->getRepository("AppBundle:Store");
-        $store = $storeRepository->findOneBystoreId($this->getUser()->getStoreId());
-
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery(
-            '
-            SELECT o FROM AppBundle:Order o WHERE o.customerId=:customerId AND o.vendorId=:vendorId AND o.orderStatus=\'ACCEPTED BY VENDOR: Being Shipped\'
-            '
-        )->setParameter('customerId', $customerId)->setParameter('vendorId', $store->getVendorId());
-        $orders = $query->getResult();
-
-        foreach ($orders as $order) {
-            $now = new \DateTime();
-            $order->setTransactionDate($now);
-            $order->setOrderStatus('DELIVERED');
-            $order->setDeliveryGuy($this->getUser()->getId());
-            $em->flush();
-        }
-
-        $this->get('session')->getFlashBag()->add(
-            'notice',
-            'Order has been marked as successfully shipped, thank you!'
-        );
-
-        return $this->redirect('/shipments/view');
     }
 }
 

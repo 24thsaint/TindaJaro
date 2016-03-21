@@ -16,11 +16,11 @@ class ProductType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('productName', TextType::class, array('label' => 'Product Name'))
-            ->add('productQuantity', NumberType::class, array('label' => 'Product Quantity', 'scale' => 0))
-            ->add('productPrice', MoneyType::class, array('label' => 'Price per Quantity', 'currency' => 'PHP', 'scale' => 2))
-            ->add('productDescription', TextareaType::class, array('label' => 'Product Description'))
-            ->add('productImage', FileType::class, array('label' => 'Product Image', 'required' => ''));
+            ->add('name', TextType::class, array('label' => 'Product Name'))
+            ->add('quantity', NumberType::class, array('label' => 'Product Quantity', 'scale' => 0))
+            ->add('price', MoneyType::class, array('label' => 'Price per Quantity', 'currency' => 'PHP', 'scale' => 2))
+            ->add('description', TextareaType::class, array('label' => 'Product Description'))
+            ->add('image', FileType::class, array('label' => 'Product Image', 'required' => ''));
     }
 
     public function configureOptions(OptionsResolver $resolver)

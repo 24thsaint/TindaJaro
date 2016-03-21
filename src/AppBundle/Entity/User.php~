@@ -5,16 +5,17 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\Member\MemberInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * @ORM\Entity
- * @UniqueEntity(fields="email", message="Email already taken")
- * @UniqueEntity(fields="username", message="Username already taken")
- * @UniqueEntity(fields="mobilenumber", message="Mobile number is already linked to an account!")
+ * @ORM\Entity(repositoryClass="AppBundle\Entity\MemberRepository")
+ * @UniqueEntity(fields="email", message="Email already taken", groups={"registration"})
+ * @UniqueEntity(fields="username", message="Membername already taken", groups={"registration"})
+ * @UniqueEntity(fields="mobilenumber", message="Mobile number is already linked to an account!", groups={"registration"})
  * @ORM\Table(name="app_users")
  */
-class User implements UserInterface
+class Member implements MemberInterface
 {
     /**
      * @ORM\Id
@@ -25,20 +26,20 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
-     * @Assert\Email()
+     * @Assert\NotBlank(groups={"userinfo"})
+     * @Assert\Email(groups={"userinfo"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"registration"})
      */
     private $username;
 
     /**
-     * @Assert\NotBlank()
-     * @Assert\Length(min="6", max = "32", maxMessage="Password should only contain 6 to 32 characters.", minMessage="Password should only contain 6 to 32 characters.")
+     * @Assert\NotBlank(groups={"registration", "passwordinfo"})
+     * @Assert\Length(min="6", max = "32", maxMessage="Password should only contain 6 to 32 characters.", minMessage="Password should only contain 6 to 32 characters.", groups={"registration", "passwordinfo"})
      */
     private $plainPassword;
 
@@ -46,71 +47,70 @@ class User implements UserInterface
      * The below length depends on the "algorithm" you use for encoding
      * the password, but this works well with bcrypt.
      *
-     * @ORM\Column(type="string", length=64)
+     * @ORM\Column(type="string", length=255)
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"userinfo"})
      */
     private $firstName;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"userinfo"})
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="string", unique=true)
-     * @Assert\NotBlank()
-     * @Assert\Length(min="10", max = "12", maxMessage="Please enter a valid mobile number.", minMessage="Please enter a valid mobile number.")
+     * @Assert\NotBlank(groups={"userinfo"})
+     * @Assert\Length(min="10", max = "12", maxMessage="Please enter a valid mobile number.", minMessage="Please enter a valid mobile number.", groups={"userinfo"})
      */
     private $mobilenumber;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={"userinfo"})
      */
     private $homeaddress;
 
     /**
-    * @ORM\Column(type="integer")
-    * @ORM\OneToOne(targetEntity="/AppBundle/Entity/Store", mappedBy="storeId", cascade="ALL", orphanRemoval=true)
+    * @ORM\OneToOne(targetEntity="Store", mappedBy="vendor", cascade="ALL", orphanRemoval=true)
     */
-    private $storeId;
+    private $store;
+
+    /**
+    * @ORM\OneToOne(targetEntity="Cart", mappedBy="customer", cascade="ALL", orphanRemoval=true)
+    */
+    private $cart;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Order", mappedBy="customer", cascade="ALL", orphanRemoval=true)
+     */
+    private $orders;
 
     /**
     * @ORM\Column(type="string")
     */
     private $memberType;
 
+    public function __construct()
+    {
+        $this->orders = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
     // other properties and methods
 
-    public function getEmail()
-    {
-        return $this->email;
-    }
-
-    public function setEmail($email)
-    {
-        $this->email = $email;
-    }
-
-    public function getUsername()
+    public function getMembername()
     {
         return $this->username;
     }
 
-    public function setUsername($username)
+    public function setMembername($username)
     {
         $this->username = $username;
-    }
-
-    public function getPlainPassword()
-    {
-        return $this->plainPassword;
     }
 
     public function getPassword() {
@@ -123,11 +123,6 @@ class User implements UserInterface
 
     public function eraseCredentials() {
         //do nothing yet
-    }
-
-    public function setPlainPassword($password)
-    {
-        $this->plainPassword = $password;
     }
 
     public function setPassword($password)
@@ -144,6 +139,7 @@ class User implements UserInterface
 
     // other methods, including security methods like getRoles()
 
+
     /**
      * Get id
      *
@@ -155,11 +151,35 @@ class User implements UserInterface
     }
 
     /**
+     * Set email
+     *
+     * @param string $email
+     *
+     * @return Member
+     */
+    public function setEmail($email)
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * Get email
+     *
+     * @return string
+     */
+    public function getEmail()
+    {
+        return $this->email;
+    }
+
+    /**
      * Set firstName
      *
      * @param string $firstName
      *
-     * @return User
+     * @return Member
      */
     public function setFirstName($firstName)
     {
@@ -183,7 +203,7 @@ class User implements UserInterface
      *
      * @param string $lastName
      *
-     * @return User
+     * @return Member
      */
     public function setLastName($lastName)
     {
@@ -207,9 +227,9 @@ class User implements UserInterface
      *
      * @param string $mobilenumber
      *
-     * @return User
+     * @return Member
      */
-    public function setmobilenumber($mobilenumber)
+    public function setMobilenumber($mobilenumber)
     {
         $this->mobilenumber = $mobilenumber;
 
@@ -221,7 +241,7 @@ class User implements UserInterface
      *
      * @return string
      */
-    public function getmobilenumber()
+    public function getMobilenumber()
     {
         return $this->mobilenumber;
     }
@@ -231,9 +251,9 @@ class User implements UserInterface
      *
      * @param string $homeaddress
      *
-     * @return User
+     * @return Member
      */
-    public function sethomeaddress($homeaddress)
+    public function setHomeaddress($homeaddress)
     {
         $this->homeaddress = $homeaddress;
 
@@ -245,33 +265,9 @@ class User implements UserInterface
      *
      * @return string
      */
-    public function gethomeaddress()
+    public function getHomeaddress()
     {
         return $this->homeaddress;
-    }
-
-    /**
-     * Set storeId
-     *
-     * @param integer $storeId
-     *
-     * @return User
-     */
-    public function setStoreId($storeId)
-    {
-        $this->storeId = $storeId;
-
-        return $this;
-    }
-
-    /**
-     * Get storeId
-     *
-     * @return integer
-     */
-    public function getStoreId()
-    {
-        return $this->storeId;
     }
 
     /**
@@ -279,7 +275,7 @@ class User implements UserInterface
      *
      * @param string $memberType
      *
-     * @return User
+     * @return Member
      */
     public function setMemberType($memberType)
     {
@@ -296,5 +292,111 @@ class User implements UserInterface
     public function getMemberType()
     {
         return $this->memberType;
+    }
+
+    /**
+     * Set store
+     *
+     * @param \AppBundle\Entity\Store $store
+     *
+     * @return Member
+     */
+    public function setStore(\AppBundle\Entity\Store $store = null)
+    {
+        $this->store = $store;
+
+        return $this;
+    }
+
+    /**
+     * Get store
+     *
+     * @return \AppBundle\Entity\Store
+     */
+    public function getStore()
+    {
+        return $this->store;
+    }
+
+    public function setPlainPassword($plainPassword) {
+        $this->plainPassword = $plainPassword;
+        return $this;
+    }
+
+    public function getPlainPassword() {
+        return $this->plainPassword;
+    }
+
+    public function createStore() {
+        $this->setMemberType("ROLE_MEMBER");
+
+        $store = new Store();
+        $store->setName("Tindahan ni " . $this->getFirstName());
+        $store->setIsOpen(false);
+        $store->setVendor($this);
+        $store->setDescription("Please, configure your store name and description by clicking on EDIT STORE NAME!");
+        $store->setMinimumPurchasePrice(0);
+        $store->setImage('storeDefault.jpeg');
+
+        $this->setStore($store);
+    }
+
+    /**
+     * Set cart
+     *
+     * @param \AppBundle\Entity\Cart $cart
+     *
+     * @return Member
+     */
+    public function setCart(\AppBundle\Entity\Cart $cart = null)
+    {
+        $this->cart = $cart;
+
+        return $this;
+    }
+
+    /**
+     * Get cart
+     *
+     * @return \AppBundle\Entity\Cart
+     */
+    public function getCart()
+    {
+        return $this->cart;
+    }
+
+
+    /**
+     * Add order
+     *
+     * @param \AppBundle\Entity\Order $order
+     *
+     * @return Member
+     */
+    public function addOrder(\AppBundle\Entity\Order $order)
+    {
+        $this->orders[] = $order;
+
+        return $this;
+    }
+
+    /**
+     * Remove order
+     *
+     * @param \AppBundle\Entity\Order $order
+     */
+    public function removeOrder(\AppBundle\Entity\Order $order)
+    {
+        $this->orders->removeElement($order);
+    }
+
+    /**
+     * Get orders
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getOrders()
+    {
+        return $this->orders;
     }
 }

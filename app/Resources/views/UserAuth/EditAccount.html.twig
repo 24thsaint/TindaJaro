@@ -25,23 +25,23 @@
 
     {{ form_label(form.firstname) }}
     {{ form_errors(form.firstname) }}
-    {{ form_widget(form.firstname, {attr: {value: firstname}}) }}
+    {{ form_widget(form.firstname, {attr: {value: member.firstname}}) }}
     <br />
     {{ form_label(form.lastname) }}
     {{ form_errors(form.lastname) }}
-    {{ form_widget(form.lastname, {attr: {value: lastname}}) }}
+    {{ form_widget(form.lastname, {attr: {value: member.lastname}}) }}
     <br />
     {{ form_label(form.mobilenumber) }}
     {{ form_errors(form.mobilenumber) }}
-    {{ form_widget(form.mobilenumber, {attr: {value: mobilenumber}}) }}
+    {{ form_widget(form.mobilenumber, {attr: {value: member.mobilenumber}}) }}
     <br />
     {{ form_label(form.homeaddress) }}
     {{ form_errors(form.homeaddress) }}
-    {{ form_widget(form.homeaddress, {attr: {value: homeaddress}}) }}
+    {{ form_widget(form.homeaddress, {attr: {value: member.homeaddress}}) }}
     <br />
     {{ form_label(form.email) }}
     {{ form_errors(form.email) }}
-    {{ form_widget(form.email, {attr: {value: email}}) }}
+    {{ form_widget(form.email, {attr: {value: member.email}}) }}
     <br />
     {{ form_label(form.plainPassword) }}
     {{ form_errors(form.plainPassword) }}

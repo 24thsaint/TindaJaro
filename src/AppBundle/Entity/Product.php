@@ -5,9 +5,10 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
-* @ORM\Entity
+* @ORM\Entity(repositoryClass="AppBundle\Entity\ProductRepository")
 * @ORM\Table(name="app_products")
 */
 class Product
@@ -17,206 +18,207 @@ class Product
     * @ORM\Column(type="integer")
     * @ORM\GeneratedValue(strategy="AUTO")
     */
-    private $productId;
+    private $id;
 
     /**
-    * @ORM\Column(type="integer")
-    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Store")
+    * @ORM\ManyToOne(targetEntity="Store", inversedBy="products", cascade="ALL")
     */
-    private $storeId;
+    private $store;
 
     /**
     * @ORM\Column(type="string", length=255)
     * @Assert\NotBlank(message="This is important, Product Name should not be blank!")
     * @Assert\Length(max = "255", maxMessage="Your description must not exceed 255 characters.")
     */
-    private $productName;
+    private $name;
 
     /**
     * @ORM\Column(type="decimal", precision=10, scale=2)
     * @Assert\GreaterThanOrEqual(value=0)
     * @Assert\NotBlank(message="Product Price should not be blank!")
     */
-    private $productPrice;
+    private $price;
 
     /**
     * @ORM\Column(type="string", length=255)
     * @Assert\NotBlank(message="Please enter a product description.")
     * @Assert\Length(max = "255", maxMessage="Your description must not exceed 255 characters.")
     */
-    private $productDescription;
+    private $description;
 
     /**
     * @ORM\Column(type="integer")
     * @Assert\GreaterThanOrEqual(value=0)
     * @Assert\NotBlank(message="Product Quantity should not be blank!")
     */
-    private $productQuantity;
+    private $quantity;
 
     /**
     * @ORM\Column(type="string", length=255)
     * @Assert\File(mimeTypes={ "image/jpeg" })
     * @Assert\File(maxSize="6000000")
     */
-    private $productImage;
+    private $image;
+
+    /**
+    * @ORM\Column(type="string", nullable=true)
+    */
+    private $imagePath;
 
     /**
     * @ORM\Column(type="boolean")
     */
     private $isActive;
 
+    public function overwriteImage($directory, $file) {
+        $fileName = md5(uniqid()).'.'.$file->guessExtension(); // we do not want to save the same filenames -_-
+        if ($this->getImage() == 'productDefault.jpeg') {
+            // omg do not delete the default image, other new stores need it.
+        } else {
+            $this->deleteFile($directory.'/'.$this->getImage());
+        }
+        $this->setImage($fileName);
+        $this->setImagePath($directory);
+        $file->move($directory, $fileName);
+
+        return $this;
+    }
+
+    protected function deleteFile($filePath) {
+        $fs = new Filesystem();
+        if ($fs->exists($filePath)) {
+            $fs->remove($filePath);
+        }
+    }
+
     /**
-    * Get productId
+    * Get id
     *
     * @return integer
     */
-    public function getProductId()
+    public function getId()
     {
-        return $this->productId;
+        return $this->id;
     }
 
     /**
-    * Set productName
+    * Set name
     *
-    * @param string $productName
+    * @param string $name
     *
     * @return Product
     */
-    public function setProductName($productName)
+    public function setName($name)
     {
-        $this->productName = $productName;
+        $this->name = $name;
 
         return $this;
     }
 
     /**
-    * Get productName
+    * Get name
     *
     * @return string
     */
-    public function getProductName()
+    public function getName()
     {
-        return $this->productName;
+        return $this->name;
     }
 
     /**
-    * Set productPrice
+    * Set price
     *
-    * @param string $productPrice
+    * @param string $price
     *
     * @return Product
     */
-    public function setProductPrice($productPrice)
+    public function setPrice($price)
     {
-        $this->productPrice = $productPrice;
+        $this->price = $price;
 
         return $this;
     }
 
     /**
-    * Get productPrice
+    * Get price
     *
     * @return string
     */
-    public function getProductPrice()
+    public function getPrice()
     {
-        return $this->productPrice;
+        return $this->price;
     }
 
     /**
-    * Set productDescription
+    * Set description
     *
-    * @param string $productDescription
+    * @param string $description
     *
     * @return Product
     */
-    public function setProductDescription($productDescription)
+    public function setDescription($description)
     {
-        $this->productDescription = $productDescription;
+        $this->description = $description;
 
         return $this;
     }
 
     /**
-    * Get productDescription
+    * Get description
     *
     * @return string
     */
-    public function getProductDescription()
+    public function getDescription()
     {
-        return $this->productDescription;
+        return $this->description;
     }
 
     /**
-    * Set productQuantity
+    * Set quantity
     *
-    * @param integer $productQuantity
+    * @param integer $quantity
     *
     * @return Product
     */
-    public function setProductQuantity($productQuantity)
+    public function setQuantity($quantity)
     {
-        $this->productQuantity = $productQuantity;
+        $this->quantity = $quantity;
 
         return $this;
     }
 
     /**
-    * Get productQuantity
+    * Get quantity
     *
     * @return integer
     */
-    public function getProductQuantity()
+    public function getQuantity()
     {
-        return $this->productQuantity;
+        return $this->quantity;
     }
 
     /**
-     * Set productImage
+     * Set image
      *
-     * @param string $productImage
+     * @param string $image
      *
      * @return Product
      */
-    public function setProductImage($productImage)
+    public function setImage($image)
     {
-        $this->productImage = $productImage;
+        $this->image = $image;
 
         return $this;
     }
 
     /**
-     * Get productImage
+     * Get image
      *
      * @return string
      */
-    public function getProductImage()
+    public function getImage()
     {
-        return $this->productImage;
-    }
-
-    /**
-     * Set storeId
-     *
-     * @param integer $storeId
-     *
-     * @return Product
-     */
-    public function setStoreId($storeId)
-    {
-        $this->storeId = $storeId;
-
-        return $this;
-    }
-
-    /**
-     * Get storeId
-     *
-     * @return integer
-     */
-    public function getStoreId()
-    {
-        return $this->storeId;
+        return $this->image;
     }
 
     /**
@@ -265,5 +267,67 @@ class Product
     public function getIsActive()
     {
         return $this->isActive;
+    }
+
+    /**
+     * Set store
+     *
+     * @param \AppBundle\Entity\Store $store
+     *
+     * @return Product
+     */
+    public function setStore(\AppBundle\Entity\Store $store = null)
+    {
+        $this->store = $store;
+
+        return $this;
+    }
+
+    /**
+     * Get store
+     *
+     * @return \AppBundle\Entity\Store
+     */
+    public function getStore()
+    {
+        return $this->store;
+    }
+
+    public function remove($orders) {
+        if ($orders == null) {
+            $this->setActive(false);
+
+            if ($this->getImage() != 'productDefault.jpeg') {
+                $this->deleteFile($this->getImagePath().'/'.$this->getImage());
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Set imagePath
+     *
+     * @param string $imagePath
+     *
+     * @return Product
+     */
+    public function setImagePath($imagePath)
+    {
+        $this->imagePath = $imagePath;
+
+        return $this;
+    }
+
+    /**
+     * Get imagePath
+     *
+     * @return string
+     */
+    public function getImagePath()
+    {
+        return $this->imagePath;
     }
 }

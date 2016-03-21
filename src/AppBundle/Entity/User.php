@@ -6,9 +6,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="AppBundle\Entity\UserRepository")
+ * @ORM\InheritanceType("JOINED")
+ * @ORM\DiscriminatorColumn(name="discr", type="string")
+ * @ORM\DiscriminatorMap({"user" = "User", "member" = "Member", "deliveryGuy" = "DeliveryGuy"})
  * @UniqueEntity(fields="email", message="Email already taken", groups={"registration"})
  * @UniqueEntity(fields="username", message="Username already taken", groups={"registration"})
  * @UniqueEntity(fields="mobilenumber", message="Mobile number is already linked to an account!", groups={"registration"})
@@ -76,27 +80,11 @@ class User implements UserInterface
     private $homeaddress;
 
     /**
-    * @ORM\Column(type="integer")
-    * @ORM\OneToOne(targetEntity="/AppBundle/Entity/Store", mappedBy="storeId", cascade="ALL", orphanRemoval=true)
-    */
-    private $storeId;
-
-    /**
     * @ORM\Column(type="string")
     */
     private $memberType;
 
     // other properties and methods
-
-    public function getEmail()
-    {
-        return $this->email;
-    }
-
-    public function setEmail($email)
-    {
-        $this->email = $email;
-    }
 
     public function getUsername()
     {
@@ -106,11 +94,6 @@ class User implements UserInterface
     public function setUsername($username)
     {
         $this->username = $username;
-    }
-
-    public function getPlainPassword()
-    {
-        return $this->plainPassword;
     }
 
     public function getPassword() {
@@ -123,11 +106,6 @@ class User implements UserInterface
 
     public function eraseCredentials() {
         //do nothing yet
-    }
-
-    public function setPlainPassword($password)
-    {
-        $this->plainPassword = $password;
     }
 
     public function setPassword($password)
@@ -144,6 +122,20 @@ class User implements UserInterface
 
     // other methods, including security methods like getRoles()
 
+    public function getRejectedOrderCount() {
+        return $this->getOrderCountByStatus("REJECTED");
+    }
+
+    protected function getOrderCountByStatus($status) {
+        $count = 0;
+        foreach ($this->getOrders() as $order) {
+            if ($order->getStatus() == $status) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
     /**
      * Get id
      *
@@ -152,6 +144,30 @@ class User implements UserInterface
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Set email
+     *
+     * @param string $email
+     *
+     * @return User
+     */
+    public function setEmail($email)
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * Get email
+     *
+     * @return string
+     */
+    public function getEmail()
+    {
+        return $this->email;
     }
 
     /**
@@ -202,6 +218,10 @@ class User implements UserInterface
         return $this->lastName;
     }
 
+    public function getFullName() {
+        return $this->getFirstName() .' '. $this->getLastName();
+    }
+
     /**
      * Set mobilenumber
      *
@@ -209,7 +229,7 @@ class User implements UserInterface
      *
      * @return User
      */
-    public function setmobilenumber($mobilenumber)
+    public function setMobilenumber($mobilenumber)
     {
         $this->mobilenumber = $mobilenumber;
 
@@ -221,7 +241,7 @@ class User implements UserInterface
      *
      * @return string
      */
-    public function getmobilenumber()
+    public function getMobilenumber()
     {
         return $this->mobilenumber;
     }
@@ -233,7 +253,7 @@ class User implements UserInterface
      *
      * @return User
      */
-    public function sethomeaddress($homeaddress)
+    public function setHomeaddress($homeaddress)
     {
         $this->homeaddress = $homeaddress;
 
@@ -245,33 +265,9 @@ class User implements UserInterface
      *
      * @return string
      */
-    public function gethomeaddress()
+    public function getHomeaddress()
     {
         return $this->homeaddress;
-    }
-
-    /**
-     * Set storeId
-     *
-     * @param integer $storeId
-     *
-     * @return User
-     */
-    public function setStoreId($storeId)
-    {
-        $this->storeId = $storeId;
-
-        return $this;
-    }
-
-    /**
-     * Get storeId
-     *
-     * @return integer
-     */
-    public function getStoreId()
-    {
-        return $this->storeId;
     }
 
     /**
@@ -298,4 +294,71 @@ class User implements UserInterface
         return $this->memberType;
     }
 
+    public function setPlainPassword($plainPassword) {
+        $this->plainPassword = $plainPassword;
+        return $this;
+    }
+
+    public function getPlainPassword() {
+        return $this->plainPassword;
+    }
+
+    /**
+     * Set cart
+     *
+     * @param \AppBundle\Entity\Cart $cart
+     *
+     * @return User
+     */
+    public function setCart(\AppBundle\Entity\Cart $cart = null)
+    {
+        $this->cart = $cart;
+
+        return $this;
+    }
+
+    /**
+     * Get cart
+     *
+     * @return \AppBundle\Entity\Cart
+     */
+    public function getCart()
+    {
+        return $this->cart;
+    }
+
+
+    /**
+     * Add order
+     *
+     * @param \AppBundle\Entity\Order $order
+     *
+     * @return User
+     */
+    public function addOrder(\AppBundle\Entity\Order $order)
+    {
+        $this->orders[] = $order;
+
+        return $this;
+    }
+
+    /**
+     * Remove order
+     *
+     * @param \AppBundle\Entity\Order $order
+     */
+    public function removeOrder(\AppBundle\Entity\Order $order)
+    {
+        $this->orders->removeElement($order);
+    }
+
+    /**
+     * Get orders
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getOrders()
+    {
+        return $this->orders;
+    }
 }

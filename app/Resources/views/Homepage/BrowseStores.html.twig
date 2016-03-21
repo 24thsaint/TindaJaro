@@ -7,17 +7,17 @@
     <hr />
 
     {% for store in stores %}
-    <a href="/browse/stores/{{ store.storeId }}">
+    <a href="/browse/stores/{{ store.id }}">
         <div class="col-sm-2 panel panel-default hover-effect">
             <center>
-                <img alt="{{ store.getStoreName }}" class="img-circle preview-thumbnail" src="{{ asset('uploads/stores/images/'~store.storeImage) }}" />
+                <img alt="{{ store.name }}" class="img-circle preview-thumbnail" src="{{ asset('uploads/stores/images/'~store.image) }}" />
                 <br />
                 <p>
-                    <b>{{ store.storeName }}</b>
+                    <b>{{ store.name }}</b>
                     <br />
-                    <span style="color: black"><i>{{ store.storeDescription }}</i></span>
+                    <span style="color: black"><i>{{ store.description }}</i></span>
                 </p>
-                <input id="input-7-xs" class="rating rating-loading" data-display-only=true value="{{ store.storeRating }}" data-min="0" data-max="5" data-step="1" data-size="xs" />
+                <input id="input-7-xs" class="rating rating-loading" data-display-only=true value="{{ store.getAverageRatings }}" data-min="0" data-max="5" data-step="1" data-size="xs" />
             </center>
         </div>
     </a>

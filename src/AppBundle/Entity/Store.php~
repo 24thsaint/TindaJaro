@@ -5,9 +5,10 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="AppBundle\Entity\StoreRepository")
  * @ORM\Table(name="app_stores")
  */
 class Store
@@ -16,35 +17,34 @@ class Store
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Product", cascade="ALL", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Product", cascade="ALL", orphanRemoval=true)
      */
-    private $storeId;
+    private $id;
 
     /**
-     * @ORM\Column(type="integer", unique=true)
-     * @ORM\OneToOne(targetEntity="/AppBundle/Entity/User", inversedBy="storeId")
+     * @ORM\OneToOne(targetEntity="Member", inversedBy="store", cascade="ALL", orphanRemoval=true)
      */
-    private $vendorId;
+    private $vendor;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $storeName;
+    private $name;
 
     /**
     * @ORM\Column(type="string")
     */
-    private $storeDescription;
+    private $description;
 
     /**
     * @ORM\Column(type="boolean")
     */
-    private $isStoreStatusOpen;
+    private $isOpen;
 
     /**
     * @ORM\Column(type="string", length=255)
     */
-    private $storeImage;
+    private $image;
 
     /**
     * @ORM\Column(type="decimal", precision=10, scale=2)
@@ -52,162 +52,266 @@ class Store
     */
     private $minimumPurchasePrice;
 
-    // other properties and methods
-    //* @Assert\File(mimeTypes={ "image/jpeg" })
-    //* @Assert\File(maxSize="6000000")
-
+    /**
+    * @ORM\OneToMany(targetEntity="Product", mappedBy="store", cascade="ALL", orphanRemoval=true)
+    */
+    private $products;
 
     /**
-     * Get storeId
-     *
-     * @return integer
-     */
-    public function getStoreId()
-    {
-        return $this->storeId;
+    * @ORM\OneToMany(targetEntity="Rating", mappedBy="store", cascade="ALL", orphanRemoval=true)
+    */
+    private $ratings;
+
+    /**
+    * @ORM\OneToMany(targetEntity="Order", mappedBy="store", cascade="ALL", orphanRemoval=true)
+    */
+    private $orders;
+
+    public function __construct() {
+       $this->products = new ArrayCollection();
+       $this->ratings = new ArrayCollection();
+       $this->orders = new ArrayCollection();
     }
 
     /**
-     * Set vendorId
+     * Get id
      *
-     * @param integer $vendorId
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set vendor
+     *
+     * @param string $vendor
      *
      * @return Store
      */
-    public function setVendorId($vendorId)
+    public function setVendor($vendor)
     {
-        $this->vendorId = $vendorId;
+        $this->vendor = $vendor;
 
         return $this;
     }
 
     /**
-     * Get vendorId
-     *
-     * @return integer
-     */
-    public function getVendorId()
-    {
-        return $this->vendorId;
-    }
-
-    /**
-     * Set storeName
-     *
-     * @param string $storeName
-     *
-     * @return Store
-     */
-    public function setStoreName($storeName)
-    {
-        $this->storeName = $storeName;
-
-        return $this;
-    }
-
-    /**
-     * Get storeName
+     * Get vendor
      *
      * @return string
      */
-    public function getStoreName()
+    public function getVendor()
     {
-        return $this->storeName;
+        return $this->vendor;
     }
 
     /**
-     * Set isStoreStatusOpen
+     * Set name
      *
-     * @param boolean $isStoreStatusOpen
+     * @param string $name
      *
      * @return Store
      */
-    public function setIsStoreStatusOpen($isStoreStatusOpen)
+    public function setName($name)
     {
-        $this->isStoreStatusOpen = $isStoreStatusOpen;
+        $this->name = $name;
 
         return $this;
     }
 
     /**
-     * Get isStoreStatusOpen
+     * Get name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Set description
+     *
+     * @param string $description
+     *
+     * @return Store
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * Get description
+     *
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * Set isOpen
+     *
+     * @param boolean $isOpen
+     *
+     * @return Store
+     */
+    public function setIsOpen($isOpen)
+    {
+        $this->isOpen = $isOpen;
+
+        return $this;
+    }
+
+    /**
+     * Get isOpen
      *
      * @return boolean
      */
-    public function getIsStoreStatusOpen()
+    public function getIsOpen()
     {
-        return $this->isStoreStatusOpen;
+        return $this->isOpen;
     }
 
     /**
-     * Set storeDescription
+     * Set image
      *
-     * @param string $storeDescription
+     * @param string $image
      *
      * @return Store
      */
-    public function setStoreDescription($storeDescription)
+    public function setImage($image)
     {
-        $this->storeDescription = $storeDescription;
+        $this->image = $image;
+
+        return $this;
+    }
+
+    public function overwriteImage($directory, $file) {
+        $fileName = md5(uniqid()).'.'.$file->guessExtension(); // we do not want to save the same filenames -_-
+        if ($this->getImage() == 'storeDefault.jpeg') {
+            // omg do not delete the default image, other new stores need it.
+        } else {
+            $this->deleteFile($directory.'/'.$this->getImage());
+        }
+        $store->setImage($fileName);
+        $file->move($directory, $fileName);
+
+        return $this;
+    }
+
+    protected function deleteFile($filePath) {
+        $fs = new Filesystem();
+        if ($fs->exists($filePath)) {
+            $fs->remove($filePath);
+        }
+    }
+
+    /**
+     * Get image
+     *
+     * @return string
+     */
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    /**
+     * Set minimumPurchasePrice
+     *
+     * @param string $minimumPurchasePrice
+     *
+     * @return Store
+     */
+    public function setMinimumPurchasePrice($minimumPurchasePrice)
+    {
+        $this->minimumPurchasePrice = $minimumPurchasePrice;
 
         return $this;
     }
 
     /**
-     * Get storeDescription
+     * Get minimumPurchasePrice
      *
      * @return string
      */
-    public function getStoreDescription()
+    public function getMinimumPurchasePrice()
     {
-        return $this->storeDescription;
+        return $this->minimumPurchasePrice;
     }
 
     /**
-     * Set storeImage
+     * Add product
      *
-     * @param string $storeImage
+     * @param \AppBundle\Entity\Product $product
      *
      * @return Store
      */
-    public function setStoreImage($storeImage)
+    public function addProduct(\AppBundle\Entity\Product $product)
     {
-        $this->storeImage = $storeImage;
+        $this->products[] = $product;
 
         return $this;
     }
 
     /**
-     * Get storeImage
+     * Remove product
      *
-     * @return string
+     * @param \AppBundle\Entity\Product $product
      */
-    public function getStoreImage()
+    public function removeProduct(\AppBundle\Entity\Product $product)
     {
-        return $this->storeImage;
+        $this->products->removeElement($product);
     }
 
     /**
-     * Set storeDeliveryFee
+     * Get products
      *
-     * @param string $storeDeliveryFee
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getProducts()
+    {
+        return $this->products;
+    }
+
+    /**
+     * Add rating
+     *
+     * @param \AppBundle\Entity\Rating $rating
      *
      * @return Store
      */
-    public function setStoreDeliveryFee($storeDeliveryFee)
+    public function addRating(\AppBundle\Entity\Rating $rating)
     {
-        $this->storeDeliveryFee = $storeDeliveryFee;
+        $this->ratings[] = $rating;
 
         return $this;
     }
 
     /**
-     * Get storeDeliveryFee
+     * Remove rating
      *
-     * @return string
+     * @param \AppBundle\Entity\Rating $rating
      */
-    public function getStoreDeliveryFee()
+    public function removeRating(\AppBundle\Entity\Rating $rating)
     {
-        return $this->storeDeliveryFee;
+        $this->ratings->removeElement($rating);
+    }
+
+    /**
+     * Get ratings
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRatings()
+    {
+        return $this->ratings;
     }
 }

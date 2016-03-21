@@ -41,17 +41,17 @@ class VendorControllerTest extends WebTestCase {
             $crawler->filter('input')
         );
 
-        $productName = "Dried Fish";
+        $name = "Dried Fish";
 
         $form = $crawler->selectButton('Add Product')->form();
-        $form['product[productName]'] = $productName;
-        $form['product[productQuantity]'] = 100;
-        $form['product[productPrice]'] = 400;
-        $form['product[productDescription]'] = "Fresh dried fish from Palawan";
-        $form['product[productImage]'] = "http://images.fish.com/fish.jpg";
+        $form['product[name]'] = $name;
+        $form['product[quantity]'] = 100;
+        $form['product[price]'] = 400;
+        $form['product[description]'] = "Fresh dried fish from Palawan";
+        $form['product[image]'] = "http://images.fish.com/fish.jpg";
         $crawler = $client->submit($form);
 
-        $this->assertContains('Your product '.$productName.' was successfully added to your store!', $client->getResponse()->getContent());
+        $this->assertContains('Your product '.$name.' was successfully added to your store!', $client->getResponse()->getContent());
 
         // I can see my product added to the table
         $this->assertContains('Dried Fish', $client->getResponse()->getContent());

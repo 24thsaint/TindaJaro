@@ -1,0 +1,10 @@
+
+{% for message in messages %}
+
+<div style="background-color: rgb({{ message.getChatColor }});">
+<span class="pull-right">(<i>{{ message.getFormattedMessageDate }}</i>)</span>
+<br />
+<b>{{ message.getSender.getFullName }}</b>: {{ message.getContent }}
+</div>
+
+{% endfor %}

@@ -8,23 +8,23 @@
             <tr>
                 <td rowspan="7">
                     <center>
-                        <img id="product-image-preview" src="{{ asset('/uploads/products/images/'~ product.productImage ) }}" />
+                        <img id="product-image-preview" src="{{ asset('/uploads/products/images/'~ product.image ) }}" />
                     </center>
                 </td>
             </tr>
             <tr>
-                <td><h1>{{ product.productName }}</h1></td>
+                <td><h1>{{ product.name }}</h1></td>
             </tr>
             <tr>
-                <td><p><b>Description:</b> {{ product.productDescription }}</p></td>
+                <td><p><b>Description:</b> {{ product.description }}</p></td>
             </tr>
             <tr>
-                <td><p><b>Price:</b> PHP {{ product.productPrice }}</p></td>
+                <td><p><b>Price:</b> PHP {{ product.price }}</p></td>
             </tr>
             <tr>
-                <td><p><b>Stocks:</b> <span id="stocks">{{ product.productQuantity }} available</span></p></td>
+                <td><p><b>Stocks:</b> <span id="stocks">{{ product.quantity }} available</span></p></td>
             </tr>
-            {% if userId == vendorId %}
+            {% if user.id == product.store.vendor.id %}
             <!-- Do nothing -->
             <tr>
                 <td>
@@ -34,7 +34,7 @@
             {% else %}
             <tr>
                 <td>
-                    <form id="form" name="form" role="form" class="form-inline" method="POST" action="/cart/add/{{ vendorId }}/{{ product.productId }}">
+                    <form id="form" name="form" role="form" class="form-inline" method="POST" action="/cart/add/{{ product.store.vendor.id }}/{{ product.id }}">
                         <div class="form-group">
                             {% for flashMessage in app.session.flashbag.get('notice') %}
                             <div class="alert alert-danger">
@@ -66,9 +66,9 @@
                     </div>
                     <div class="modal-body">
 
-                        Vendor Name: <b>{{ vendorName }} </b><br />
-                        Vendor Address: <b>{{ vendorAddress }} </b><br />
-                        Vendor Contact Number: <b>{{ vendorMobileNumber }} </b><br />
+                        Vendor Name: <b>{{ product.store.vendor.firstname }} {{ product.store.vendor.lastname }}</b><br />
+                        Vendor Address: <b>{{ product.store.vendor.homeaddress }} </b><br />
+                        Vendor Contact Number: <b>{{ product.store.vendor.mobileNumber }} </b><br />
                         <br />
                         <button type="reset" class="btn btn-success"  data-dismiss="modal"><span class="glyphicon glyphicon-check"></span> Got It!</button>
 

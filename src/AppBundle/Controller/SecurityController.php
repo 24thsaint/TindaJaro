@@ -5,7 +5,7 @@ namespace AppBundle\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use AppBundle\Entity\User;
+use AppBundle\Entity\Member;
 use AppBundle\Form\InfoType;
 use AppBundle\Form\ChangePasswordType;
 
@@ -45,10 +45,8 @@ class SecurityController extends Controller {
     */
     public function changeInfoAction(Request $request) {
         $em = $this->getDoctrine()->getManager();
-        $userRepository = $this->getDoctrine()->getRepository("AppBundle:User");
-        $oldUserInfo = $userRepository->findOneByid($this->getUser()->getId());
-
-        $user = new User();
+        $oldMemberInfo = $this->getUser();
+        $user = new Member();
         $form = $this->createForm(InfoType::class, $user);
         $form->handleRequest($request);
 
@@ -56,12 +54,12 @@ class SecurityController extends Controller {
             $password = $this->get('security.password_encoder')
                 ->encodePassword($user, $user->getPlainPassword());
 
-            if (password_verify($user->getPlainPassword(), $oldUserInfo->getPassword())) {
-                $oldUserInfo->setFirstName($user->getFirstName());
-                $oldUserInfo->setLastName($user->getLastName());
-                $oldUserInfo->setMobileNumber($user->getMobileNumber());
-                $oldUserInfo->setHomeAddress($user->getHomeAddress());
-                $oldUserInfo->setEmail($user->getEmail());
+            if (password_verify($user->getPlainPassword(), $oldMemberInfo->getPassword())) {
+                $oldMemberInfo->setFirstName($user->getFirstName());
+                $oldMemberInfo->setLastName($user->getLastName());
+                $oldMemberInfo->setMobileNumber($user->getMobileNumber());
+                $oldMemberInfo->setHomeAddress($user->getHomeAddress());
+                $oldMemberInfo->setEmail($user->getEmail());
 
                 $em->flush();
 
@@ -76,30 +74,19 @@ class SecurityController extends Controller {
                 );
             }
 
-            return $this->render(
-                'UserAuth/EditAccount.html.twig',
-                array(
-                    'form' => $form->createView(),
-                    'errors' => null,
-                    'firstname' => $user->getFirstName(),
-                    'lastname' => $user->getLastName(),
-                    'mobilenumber' => $user->getMobileNumber(),
-                    'homeaddress' => $user->getHomeAddress(),
-                    'email' => $user->getEmail()
-                    )
-            );
+            return $this->redirect("/changeinfo");
         }
 
-        $userP = new User();
-        $passwordForm = $this->createForm(ChangePasswordType::class, $userP);
+        $userTemp = new Member();
+        $passwordForm = $this->createForm(ChangePasswordType::class, $userTemp);
         $passwordForm->handleRequest($request);
 
         if ($passwordForm->isSubmitted() && $passwordForm->isValid()) {
             $password = $this->get('security.password_encoder')
-                ->encodePassword($userP, $userP->getPlainPassword());
+                ->encodePassword($userTemp, $userTemp->getPlainPassword());
 
-            if (password_verify($userP->getPassword(), $oldUserInfo->getPassword())) {
-                $oldUserInfo->setPassword($password);
+            if (password_verify($userTemp->getPlainPassword(), $oldMemberInfo->getPassword())) {
+                $oldMemberInfo->setPassword($password);
 
                 $em->flush();
 
@@ -124,11 +111,7 @@ class SecurityController extends Controller {
                 'form' => $form->createView(),
                 'passwordForm' => $passwordForm->createView(),
                 'errors' => null,
-                'firstname' => $oldUserInfo->getFirstName(),
-                'lastname' => $oldUserInfo->getLastName(),
-                'mobilenumber' => $oldUserInfo->getMobileNumber(),
-                'homeaddress' => $oldUserInfo->getHomeAddress(),
-                'email' => $oldUserInfo->getEmail()
+                'member' => $oldMemberInfo
                 )
         );
     }

@@ -8,6 +8,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use AppBundle\Entity\Message;
 use AppBundle\Entity\Rating;
+use AppBundle\Entity\Product;
+use AppBundle\Entity\Store;
 use AppBundle\Controller\AjaxController;
 
 class NavigationController extends Controller {
@@ -35,41 +37,21 @@ class NavigationController extends Controller {
         return $this->render(
             'Homepage/Overview.html.twig',
             array(
-                'firstname' => $user->getFirstName(),
-                'lastname' => $user->getLastName(),
-                'mobilenumber' => $user->getMobileNumber(),
-                'email' => $user->getEmail(),
-                'homeaddress' => $user->getHomeAddress(),
+                'user' => $this->getUser(),
                 'greeting' => $timeGreet . ', ' . $user->getFirstName() . '!'
             )
         );
     }
 
     /**
-    * @Route("/product/view/{productId}")
+    * @Route("/product/view/{product}")
     */
-    public function productViewAction($productId) {
-
-        $repository = $this->getDoctrine()->getRepository("AppBundle:Product");
-        $product = $repository->findOneByproductId($productId);
-        $storeRepository = $this->getDoctrine()->getRepository("AppBundle:Store");
-        $store = $storeRepository->findOneBystoreId($product->getStoreId());
-
-        $userId = $this->getUser()->getId();
-        $vendorId = $store->getVendorId();
-
-        $userRepository = $this->getDoctrine()->getRepository("AppBundle:User");
-        $user = $userRepository->findOneById($vendorId);
-
+    public function productViewAction(Product $product) {
         return $this->render(
             'Store/ViewProduct.html.twig',
             array(
                 'product' => $product,
-                'userId' => $userId,
-                'vendorId' => $vendorId,
-                'vendorName' => $user->getFirstname().' '.$user->getLastName(),
-                'vendorAddress' => $user->getHomeAddress(),
-                'vendorMobileNumber' => $user->getMobileNumber()
+                'user' => $this->getUser()
             )
         );
     }
@@ -77,15 +59,9 @@ class NavigationController extends Controller {
     /**
     * @Route("/browse/stores")
     */
-    public function allStoresBrowseFunction() {
+    public function browseOpenStoresAction() {
         $repository = $this->getDoctrine()->getRepository("AppBundle:Store");
-
-        $stores = $repository->findByisStoreStatusOpen(true);
-
-        foreach ($stores as $store) {
-            $rating = $this->getStoreRating($store->getStoreId());
-            $store->storeRating = $rating;
-        }
+        $stores = $repository->findByisOpen(true);
 
         return $this->render(
             'Homepage/BrowseStores.html.twig',
@@ -96,35 +72,32 @@ class NavigationController extends Controller {
     }
 
     /**
-    * @Route("/browse/stores/{storeId}")
+    * @Route("/browse/stores/{store}")
     */
-    public function singleStoreBrowseAction($storeId) {
-        $storeRepository = $this->getDoctrine()->getRepository("AppBundle:Store");
-        $store = $storeRepository->findOneBystoreId($storeId);
-
-        $em = $this->getDoctrine()->getManager();
-
-        $query = $em->createQuery(
-            '
-            SELECT p FROM AppBundle:Product p WHERE p.storeId = :storeId AND p.productQuantity > 0 ORDER BY p.productId DESC
-            '
-        )->setParameter('storeId', $storeId);
-
-        $products = $query->getResult();
-
-        $storeRating = $this->getStoreRating($storeId);
-
-        $vendorId = $store->getVendorId();
+    public function singleStoreBrowseAction(Store $store) {
+        $productRepository = $this->getDoctrine()->getRepository("AppBundle:Product");
+        $products = $productRepository->findAllActiveProductsInASpecificStore($store);
 
         return $this->render(
             'Homepage/ViewStoreSingle.html.twig',
             array(
-                'products' => $products,
-                'storename' => $store->getStoreName(),
-                'storeimage' => $store->getStoreImage(),
-                'storeId' => $store->getStoreId(),
-                'storeRating' => $storeRating,
-                'vendorId' => $vendorId
+                'store' => $store,
+                'products' => $products
+            )
+        );
+    }
+
+    /**
+    * @Route("/shipments/view")
+    */
+    public function viewShippedAction() {
+        $store = $this->getUser()->getStore();
+        $shippedOrders = $store->getAllShippedOrders();
+
+        return $this->render(
+            'Store/MyStoreShipped.html.twig',
+            array(
+                'shippedOrders' => $shippedOrders
             )
         );
     }
@@ -185,30 +158,7 @@ class NavigationController extends Controller {
     * @Route("/transaction-history")
     */
     public function transactionHistoryAction() {
-        $transactions = array();
-        $em = $this->getDoctrine()->getManager();
-
-        $query = $em->createQuery(
-            '
-                SELECT t FROM AppBundle:Order t WHERE t.customerId=:customerId ORDER BY t.transactionDate DESC
-            '
-        )->setParameter("customerId", $this->getUser()->getId());
-        $orders = $query->getResult();
-
-        $productRepository = $this->getDoctrine()->getRepository("AppBundle:Product");
-
-        foreach ($orders as $order) {
-            $transaction = array();
-            $product = $productRepository->findOneByproductId($order->getProductId());
-
-            $transaction['transactionDate'] = date_format($order->getTransactionDate(), DATE_RFC850);
-            $transaction['productName'] = $product->getProductName();
-            $transaction['productPrice'] = $product->getProductPrice();
-            $transaction['orderQuantity'] = $order->getQuantity();
-            $transaction['status'] = $order->getOrderStatus();
-            $transactions[] = $transaction;
-        }
-
+        $transactions = $this->getUser()->getOrders();
         return $this->render('Homepage/TransactionHistory.html.twig', array('transactions' => $transactions));
     }
 

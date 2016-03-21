@@ -3,22 +3,22 @@
 {% block body %}
 
 <div class="container">
-    <h1><img class="preview-thumbnail img-circle" src="{{ asset('/uploads/stores/images/'~storeimage) }}" /> {{ storename }}</h1>
+    <h1><img class="preview-thumbnail img-circle" src="{{ asset('/uploads/stores/images/'~store.image) }}" /> {{ store.name }}</h1>
         <div id="ratingNotification" class="alert alert-success fade in" style="display: none;">Your rating was successfully acknowledged!</div>
         <label for="input-7-xs" class="control-label">Store Rating:</label>
-        <input id="input-7-xs" class="rating rating-loading" value="{{ storeRating }}" data-min="0" data-max="5" data-step="1" data-size="xs" />
+        <input id="input-7-xs" class="rating rating-loading" value="{{ store.getAverageRatings }}" data-min="0" data-max="5" data-step="1" data-size="xs" />
     <hr />
     {% for product in products %}
-    <a href="/product/view/{{ product.productId }}">
+    <a href="/product/view/{{ product.id }}">
         <div class="col-sm-2 panel panel-default hover-effect">
             <center>
-            <img class="preview-thumbnail" src="{{ asset('/uploads/products/images/'~product.productImage) }}" /><br />
-            <h3>{{ product.productName }}</h3>
+            <img class="preview-thumbnail" src="{{ asset('/uploads/products/images/'~product.image) }}" /><br />
+            <h3>{{ product.name }}</h3>
             <p>
             <span style="color: green">
-                <b>PHP {{ product.productPrice }}</b><br />
+                <b>PHP {{ product.price }}</b><br />
             </span>
-                Quantity Left: {{ product.productQuantity }}
+                Quantity Left: {{ product.quantity }}
             </p>
             </center>
         </div>
@@ -48,7 +48,7 @@
                     $('#input-7-xs').rating('update', xmlhttp.responseText);
     	        }
     	    };
-    	    xmlhttp.open("GET", "/rate/{{ storeId }}/" + rating, true);
+    	    xmlhttp.open("GET", "/rate/{{ store.id }}/" + rating, true);
     	    xmlhttp.send();
     	}
     </script>

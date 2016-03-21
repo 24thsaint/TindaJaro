@@ -1,0 +1,23 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\Member\MemberInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="app_delivery_guys")
+ */
+class DeliveryGuy extends Member
+{
+
+    /**
+    * @ORM\ManyToOne(targetEntity="member", inversedBy="deliveryGuys")
+    */
+    private $owner;
+
+}

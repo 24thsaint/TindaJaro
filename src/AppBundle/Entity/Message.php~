@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
-* @ORM\Entity
+* @ORM\Entity(repositoryClass="AppBundle\Entity\MessageRepository")
 * @ORM\Table(name="app_messages")
 */
 class Message
@@ -17,159 +17,91 @@ class Message
     * @ORM\Column(type="integer")
     * @ORM\GeneratedValue(strategy="AUTO")
     */
-    private $messageId;
+    private $id;
 
     /**
     * @ORM\Column(type="datetime")
     * @Assert\NotBlank()
     */
-    private $messageDate;
+    private $date;
 
     /**
-    * @ORM\Column(type="string")
-    * @Assert\NotBlank()
+    * @ORM\ManyToOne(targetEntity="Member", inversedBy="chatMessages")
     */
-    private $messageSender;
-
-    /**
-    * @ORM\Column(type="string")
-    * @Assert\NotBlank()
-    */
-    private $messageColor;
+    private $sender;
 
     /**
     * @ORM\Column(type="string", length=255)
     * @Assert\NotBlank(message="Message should not be blank")
     */
-    private $messageContent;
+    private $content;
+
+    public function __construct($sender, $content) {
+        $now = new \DateTime();
+        $this->setDate($now);
+        $this->setContent($content);
+    }
+
+    public function getChatColor() {
+        return $this->getSender()->getChatColor();
+    }
 
     /**
-     * Get messageId
+     * Get id
      *
      * @return integer
      */
-    public function getMessageId()
+    public function getId()
     {
-        return $this->messageId;
+        return $this->id;
     }
 
     /**
-     * Set messageDate
+     * Set date
      *
-     * @param \DateTime $messageDate
+     * @param \DateTime $date
      *
      * @return Message
      */
-    public function setMessageDate($messageDate)
+    public function setDate($date)
     {
-        $this->messageDate = $messageDate;
+        $this->date = $date;
 
         return $this;
     }
 
     /**
-     * Get messageDate
+     * Get date
      *
      * @return \DateTime
      */
-    public function getMessageDate()
+    public function getDate()
     {
-        return $this->messageDate;
+        return $this->date;
     }
 
     /**
-     * Set messageSender
+     * Set content
      *
-     * @param string $messageSender
+     * @param string $content
      *
      * @return Message
      */
-    public function setMessageSender($messageSender)
+    public function setContent($content)
     {
-        $this->messageSender = $messageSender;
-
+        $c = htmlspecialchars($content);
+        $c = chop($c);
+        $this->content = $c;
         return $this;
     }
 
     /**
-     * Get messageSender
+     * Get content
      *
      * @return string
      */
-    public function getMessageSender()
+    public function getContent()
     {
-        return $this->messageSender;
-    }
-
-    /**
-     * Set messageContent
-     *
-     * @param string $messageContent
-     *
-     * @return Message
-     */
-    public function setMessageContent($messageContent)
-    {
-        $this->messageContent = $messageContent;
-
-        return $this;
-    }
-
-    /**
-     * Get messageContent
-     *
-     * @return string
-     */
-    public function getMessageContent()
-    {
-        return $this->messageContent;
-    }
-
-    /**
-     * Set messageColor
-     *
-     * @param string $messageColor
-     *
-     * @return Message
-     */
-    public function setMessageColor($messageColor)
-    {
-        $this->messageColor = $messageColor;
-
-        return $this;
-    }
-
-    /**
-     * Get messageColor
-     *
-     * @return string
-     */
-    public function getMessageColor()
-    {
-        return $this->messageColor;
-    }
-
-    /**
-     * Set messageContents
-     *
-     * @param string $messageContents
-     *
-     * @return Message
-     */
-    public function setMessageContents($messageContents)
-    {
-        $this->messageContents = $messageContents;
-
-        return $this;
-    }
-
-    /**
-     * Get messageContents
-     *
-     * @return string
-     */
-    public function getMessageContents()
-    {
-        return $this->messageContents;
+        return $this->content;
     }
 }

@@ -8,23 +8,23 @@
 <div class="center-div panel panel-default" id="create-listing">
     {{ form_start(form) }}
 
-    {{ form_label(form.productName) }}
-    {{ form_errors(form.productName) }}
-    {{ form_widget(form.productName, {attr: {value: productName}}) }}
+    {{ form_label(form.name) }}
+    {{ form_errors(form.name) }}
+    {{ form_widget(form.name, {attr: {value: product.name}}) }}
     <br />
-    {{ form_label(form.productQuantity) }}
-    {{ form_errors(form.productQuantity) }}
-    {{ form_widget(form.productQuantity, {attr: {value: productQuantity}}) }}
+    {{ form_label(form.quantity) }}
+    {{ form_errors(form.quantity) }}
+    {{ form_widget(form.quantity, {attr: {value: product.quantity}}) }}
     <br />
-    {{ form_label(form.productPrice) }}
-    {{ form_errors(form.productPrice) }}
-    {{ form_widget(form.productPrice, {attr: {value: productPrice}}) }}
+    {{ form_label(form.price) }}
+    {{ form_errors(form.price) }}
+    {{ form_widget(form.price, {attr: {value: product.price}}) }}
     <br />
-    {{ form_label(form.productDescription) }}
-    {{ form_errors(form.productDescription) }}
-    {{ form_widget(form.productDescription, {'value': productDescription}) }}
+    {{ form_label(form.description) }}
+    {{ form_errors(form.description) }}
+    {{ form_widget(form.description, {'value': product.description}) }}
     <br />
-    {{ form_row(form.productImage) }}
+    {{ form_row(form.image) }}
     <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-edit"></span> Save Changes</button>
     <button type="reset" class="btn btn-warning"><span class="glyphicon glyphicon-remove"></span> Clear Form</button>
     {{ form_end(form) }}

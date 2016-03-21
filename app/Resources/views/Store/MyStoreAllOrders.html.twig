@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container">
+
+    {% for flashMessage in app.session.flashbag.get('notice') %}
+    <div class="alert alert-success">
+        {{ flashMessage }}
+    </div>
+    <hr />
+    {% endfor %}
+
+    {% for flashMessage in app.session.flashbag.get('error') %}
+    <div class="alert alert-danger">
+        {{ flashMessage }}
+    </div>
+    <hr />
+    {% endfor %}
+
+    {% if app.user.memberType=='ROLE_MEMBER' %}
+    <a href="/mystore"><button type="button" class="btn btn-info"><span class="glyphicon glyphicon-arrow-left"></span>Back</button></a>
+    {% endif %}
+
+    <center><h3>SUMMARY OF ALL ORDERS</h3></center>
+
+    <hr />
+
+    {% for order in allOrders %}
+    <div class="table-responsive table-display-fix" id="{{ order['customer'].id }}">
+
+        {% if order['lastOrderStatus'] == 'ACCEPTED BY VENDOR: Being Shipped' %}
+        <div class="alert alert-warning">This customer has orders that are currently being shipped. <a href="/shipments/view#{{ order['customer'].id }}">View shipment</a></div>
+        {% endif %}
+
+        {% if order['lastOrderStatus'] == 'DELIVERED' %}
+        <div class="alert alert-success">Last order of customer was successfully delivered by <b>{{ order['lastDeliveryGuy'].getFullName }}</b> on {{ order['lastTransactionDate'] }}</div>
+        {% endif %}
+
+        <p>Last Transaction Date: <b>{{ order['lastTransactionDate'] }}</b></p>
+        <p>Customer Name: <b>{{ order['customer'].getFullName }}</b></p>
+        <p>Address: <b>{{ order['customer'].homeaddress }}</b></p>
+        <p>Contact Number: <b>{{ order['customer'].mobilenumber }}</b></p>
+
+        <table class="table table-striped table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Transaction Date</th>
+                    <th>Order Quantity</th>
+                    <th>Product Name</th>
+                    <th>Unit Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for productOrder in order['orders'] %}
+
+                <tr>
+                    <td>{{ productOrder.status }}</td>
+                    <td>{{ productOrder.getFormattedTransactionDate }}</td>
+                    <td>{{ productOrder.quantity }}</td>
+                    <td>{{ productOrder.getProduct.name }}</td>
+                    <td>{{ productOrder.getProduct.price }}</td>
+                    <td>{{ productOrder.getTotal }}</td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+        <h3>Grand Total: PHP {{ order['total'] }}</h3>
+        <br />
+
+    </div>
+    <br />
+
+
+    {% endfor %}
+</div>
+{% endblock %}

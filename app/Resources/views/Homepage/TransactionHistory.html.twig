@@ -10,6 +10,7 @@
             <thead>
                 <th>Transaction Date</th>
                 <th>Product name</th>
+                <th>Store</th>
                 <th>Quantity Ordered</th>
                 <th>Unit Price</th>
                 <th>Total</th>
@@ -18,11 +19,12 @@
             <tbody>
                 {% for transaction in transactions %}
                 <tr>
-                    <td>{{ transaction.transactionDate }}</td>
-                    <td>{{ transaction.productName }}</td>
-                    <td>{{ transaction.orderQuantity }}</td>
-                    <td>{{ transaction.productPrice }}</td>
-                    <td>{{ transaction.orderQuantity * transaction.productPrice }}</td>
+                    <td>{{ transaction.getFormattedTransactionDate }}</td>
+                    <td>{{ transaction.getProduct.name }}</td>
+                    <td>{{ transaction.getProduct.getStore.name }}</td>
+                    <td>{{ transaction.quantity }}</td>
+                    <td>{{ transaction.getProduct.price }}</td>
+                    <td>{{ transaction.getTotal }}</td>
                     <th><span style="color: green">{{ transaction.status }}</span></td>
                 </tr>
                 {% endfor %}

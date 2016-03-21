@@ -9,6 +9,7 @@
 	    </div>
 	    <hr />
 	    {% endfor %}
+
 		{% for flashMessage in app.session.flashbag.get('error') %}
 	    <div class="alert alert-danger">
 	        {{ flashMessage }}
@@ -16,9 +17,12 @@
 	    <hr />
 	    {% endfor %}
 
-		{% for purchase in ordersBelowMinimumPurchasePrice %}
-			<div class="alert alert-danger"><b>{{ purchase.storeName }}</b> has a minimum purchase price of <b>PHP{{ purchase.minimumPurchasePrice }}</b>, you have only purchased <b>PHP{{ purchase.totalPurchases }}</b>. <a href="/browse/stores/{{ purchase.vendorId }}">Visit {{ purchase.storeName }}</a> to buy more!</div>
-		{% endfor %}
+		{% for requirement in unmetRequirements %}
+	    <div class="alert alert-warning">
+			<span style="color:red;">CHECKOUT WARNING: </span><b>{{ requirement.store.name }}</b> has a minimum purchase price of <b>PHP{{ requirement.store.minimumPurchasePrice }}</b>, you have only purchased <b>{{ requirement.value }}</b>. <a href="/browse/stores/{{ requirement.store.id }}">Visit {{ requirement.store.name }} to buy more!</a>
+	    </div>
+	    <hr />
+	    {% endfor %}
 
 		<h3>Items in Cart</h3>
 	</div>
@@ -32,15 +36,15 @@
 				<th>Price</th>
 				<th>Total</th>
 			</tr>
-			{% for orderItem in orderItems %}
+			{% for order in cart %}
 				<tr>
-					<td>{{ orderItem.storeName }}</td>
-					<td>{{ orderItem.productName }}</td>
-					<td>{{ orderItem.productDescription }}</td>
-					<td>{{ orderItem.productQuantity }}</td>
-					<td>{{ orderItem.productPrice }}</td>
-					<td>{{ orderItem.productPrice * orderItem.productQuantity }}</td>
-					<td><a href="/cart/remove/{{ orderItem.productId }}"><span class="glyphicon glyphicon-remove"></span> Remove</a></td>
+					<td>{{ order.store.name }}</td>
+					<td><b><span style="color: green; ">{{ order.product.name }}</span></b></td>
+					<td>{{ order.product.description }}</td>
+					<td>{{ order.quantity }}</td>
+					<td>{{ order.product.price }}</td>
+					<td>{{ order.product.price * order.quantity }}</td>
+					<td><a href="/cart/remove/{{ order.id }}"><span class="glyphicon glyphicon-remove"></span> Remove</a></td>
 				</tr>
 			{% endfor %}
 		</table>

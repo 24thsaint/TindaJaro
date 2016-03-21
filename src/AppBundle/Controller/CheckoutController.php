@@ -6,6 +6,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use AppBundle\Entity\Order;
+use AppBundle\Entity\Product;
+use AppBundle\Entity\Member;
+use AppBundle\Entity\Cart;
 use Symfony\Component\Validator\Constraints\Date;
 
 class CheckoutController extends Controller
@@ -14,116 +17,35 @@ class CheckoutController extends Controller
     /**
     * @Route("/cart")
     */
-    public function orderAction($checker = false) {
-        $orderRepository = $this->getDoctrine()->getRepository("AppBundle:Order");
-        $order = $orderRepository->findBycustomerId($this->getUser()->getId());
+    public function orderAction() {
+        $cart = $this->getUser()->getCart();
+        $cartItems = $cart->getOrders();
+        $total = $cart->getTotal();
+        $unmetRequirements = $cart->getUnmetMinimumPurchaseRequirements();
 
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery(
-            '
-            SELECT c FROM AppBundle:Order c WHERE c.customerId=:customerId AND c.orderStatus=\'IN-CART\'
-            '
-        )->setParameter('customerId', $this->getUser()->getId());
-
-        $checkoutEnabled = "disabled";
-
-        $order = $query->getResult();
-
-        if ($order != null) {
-            $checkoutEnabled = "";
-        }
-
-        $productRepository = $this->getDoctrine()->getRepository("AppBundle:Product");
-        $storeRepository = $this->getDoctrine()->getRepository("AppBundle:Store");
-
-        $orderItems = array();
-        $total = 0;
-
-        $purchasesPerVendor = array();
-        $minimumPurchasePrice = array();
-
-        foreach ($order as $orderData) {
-            $product = $productRepository->findOneByproductId($orderData->getProductId());
-            $store = $storeRepository->findOneByvendorId($orderData->getVendorId());
-
-            $productName = $product->getProductName();
-            $productDescription = $product->getProductDescription();
-            $productPrice = $product->getProductPrice();
-            $productId = $product->getProductId();
-            $quantity = $orderData->getQuantity();
-
-            $arrayData = array();
-            $arrayData['storeName'] = $store->getStoreName();
-            $arrayData['productName'] = $productName;
-            $arrayData['productDescription'] = $productDescription;
-            $arrayData['productPrice'] = $productPrice;
-            $arrayData['productQuantity'] = $quantity;
-            $arrayData['productId'] = $productId;
-            $orderItems[] = $arrayData;
-            $total += $productPrice * $quantity;
-
-            $vendorId = $orderData->getVendorId();
-
-            if (!isset($purchasesPerVendor[$vendorId])) {
-                $purchasesPerVendor[$vendorId] = $total;
-            } else {
-                $purchasesPerVendor[$vendorId] += $total;
-            }
-
-            $minimumPurchasePrice[$vendorId] = $store->getMinimumPurchasePrice();
-        }
-
-        $ordersBelowMinimumPurchasePrice = array();
-
-        foreach ($purchasesPerVendor as $key => $value) {
-            $minimum = $minimumPurchasePrice[$key];
-
-            $data = array();
-
-            if ($value < $minimum) {
-                $store = $storeRepository->findOneByvendorId($key);
-                $data['vendorId'] = $key;
-                $data['storeName'] = $store->getStoreName();
-                $data['minimumPurchasePrice'] = $minimum;
-                $data['totalPurchases'] = $value;
-                $ordersBelowMinimumPurchasePrice[] = $data;
-                $checkoutEnabled = 'disabled';
-                if ($checker == true) {
-                    return 'FAILED';
-                }
-            }
+        $checkoutEnabled = 'disabled';
+        if (empty($unmetRequirements)) {
+            $checkoutEnabled = '';
         }
 
         return $this->render(
             'Homepage/Cart.html.twig',
             array(
-                'orderItems' => $orderItems,
+                'cart' => $cartItems,
                 'total' => $total,
-                'ordersBelowMinimumPurchasePrice' => $ordersBelowMinimumPurchasePrice,
+                'unmetRequirements' => $unmetRequirements,
                 'checkoutEnabled' => $checkoutEnabled
             )
         );
     }
 
     /**
-    * @Route("/cart/remove/{productId}")
+    * @Route("/cart/remove/{order}")
     */
-    public function removeOrderAction($productId) {
-        $userId = $this->getUser()->getId();
+    public function removeOrderAction(Order $order) {
         $em = $this->getDoctrine()->getManager();
-
-        $query = $em->createQuery(
-            '
-            SELECT c FROM AppBundle:Order c WHERE c.customerId = :customerId AND c.productId = :productId AND c.orderStatus = \'IN-CART\'
-            '
-        )->setParameter('customerId', $userId)->setParameter('productId', $productId);
-
-        $cart = $query->getSingleResult();
-
-        $productRepository = $this->getDoctrine()->getRepository("AppBundle:Product");
-        $product = $productRepository->findOneByproductId($productId);
-        $product->setProductQuantity($product->getProductQuantity() + $cart->getQuantity());
-        $em->remove($cart);
+        $this->getUser()->getCart()->returnReservedOrder($order);
+        $em->remove($order);
         $em->flush();
 
         $this->get('session')->getFlashBag()->add(
@@ -135,56 +57,44 @@ class CheckoutController extends Controller
     }
 
     /**
-    * @Route("/cart/add/{vendorId}/{productId}")
+    * @Route("/cart/add/{vendor}/{product}")
     */
-    public function addOrderAction(Request $request, $productId, $vendorId) {
+    public function addOrderAction(Request $request, Product $product, Member $vendor) {
+        $em = $this->getDoctrine()->getManager();
         $data = $request->request->all();
         $quantity = $data['quantity'];
-        $customerId = $this->getUser()->getId();
-        $productRepository = $this->getDoctrine()->getRepository("AppBundle:Product");
-        $product = $productRepository->findOneByproductId($productId);
 
-        $postQuantity = $product->getProductQuantity() - $quantity;
-
-        if ($postQuantity < 0) {
-            $errorMessage = "Sorry, there are only ".$product->getProductQuantity()." stocks left for this product!";
+        if ($quantity <= 0) {
+            $errorMessage = "Sorry, the quantity you entered is invalid, please try again!";
 
             $this->get('session')->getFlashBag()->add(
                 'notice',
                 $errorMessage
             );
-
-            return $this->redirect('/product/view/'.$product->getProductId());
-
-            throw new \Exception($errorMessage);
+            return $this->redirect('/product/view/'.$product->getId());
+            exit();
         }
 
-        // persistence and some checks for quantity
-        $em = $this->getDoctrine()->getManager();
-
-        $query = $em->createQuery(
-            '
-            SELECT c FROM AppBundle:Order c WHERE c.customerId = :customerId AND c.productId = :productId AND c.orderStatus=\'IN-CART\'
-            '
-        )->setParameter('customerId', $customerId)->setParameter('productId', $productId);
+        $product->setQuantity($product->getQuantity() - $quantity);
 
         try {
-            $cartItem = $query->getSingleResult();
-            $cartItem->setQuantity($cartItem->getQuantity() + $quantity);
+            // if order exists, update the quantity
+            $orderRepository = $this->getDoctrine()->getRepository("AppBundle:Order");
+            $order = $orderRepository->findOneOrderThatExistsInCart($this->getUser(), $product);
+            $order->setQuantity($order->getQuantity() + $quantity);
         } catch(\Doctrine\ORM\NoResultException $e) {
+            // if it does not exist, create new order
             $order = new Order();
-            $order->setCustomerId($customerId);
-            $order->setVendorId($vendorId);
-            $order->setProductId($productId);
+            $order->setCustomer($this->getUser());
+            $order->setProduct($product);
             $order->setQuantity($quantity);
-            $order->setDeliveryGuy($vendorId);
+            $order->setDeliveryGuy(null);
             $now = new \DateTime();
             $order->setTransactionDate($now);
-            $order->setOrderStatus("IN-CART");
+            $order->setStatus("IN-CART");
             $em->persist($order);
+            $this->getUser()->getCart()->addOrder($order);
         }
-
-        $product->setProductQuantity($postQuantity);
 
         $em->flush();
 
@@ -200,34 +110,28 @@ class CheckoutController extends Controller
     * @Route("/cart/checkout")
     */
     public function checkoutAction() {
-
-        if ($this->orderAction(true) == 'FAILED') {
+        $em = $this->getDoctrine()->getManager();
+        if (!empty($this->getUser()->getCart()->getUnmetMinimumPurchaseRequirements())) {
             return $this->redirect("/cart");
             exit();
         }
-
-        $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery(
-            '
-            SELECT c FROM AppBundle:Order c WHERE c.customerId=:customerId AND c.orderStatus=\'IN-CART\'
-            '
-        )->setParameter('customerId', $this->getUser()->getId());
-
-        $orders = $query->getResult();
-
-        if ($orders == null) {
+        if (empty($this->getUser()->getCart()->getOrders())) {
             $this->get('session')->getFlashBag()->add(
                 'error',
                 'Unable to checkout, cart is empty!'
             );
             return $this->redirect('/cart');
+            exit();
         }
-
-        foreach ($orders as $order) {
-            $order->setOrderStatus("CHECKED-OUT");
-            $now = new \DateTime();
-            $order->setTransactionDate($now);
+        if ($this->getUser()->getCart()->checkout()) {
             $em->flush();
+        } else {
+            $this->get('session')->getFlashBag()->add(
+                'error',
+                'There was an error during checkout, please try again.'
+            );
+            return $this->redirect('/cart');
+            exit();
         }
 
         $this->get('session')->getFlashBag()->add(

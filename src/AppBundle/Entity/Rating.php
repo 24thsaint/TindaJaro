@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
-* @ORM\Entity
+* @ORM\Entity(repositoryClass="AppBundle\Entity\RatingRepository")
 * @ORM\Table(name="app_ratings")
 */
 class Rating
@@ -17,19 +17,17 @@ class Rating
     * @ORM\Column(type="integer")
     * @ORM\GeneratedValue(strategy="AUTO")
     */
-    private $ratingId;
+    private $id;
 
     /**
-    * @ORM\Column(type="integer")
-    * @ORM\OneToOne(targetEntity="AppBundle\Entity\User")
+    * @ORM\OneToOne(targetEntity="Member")
     */
-    private $customerId;
+    private $customer;
 
     /**
-    * @ORM\Column(type="integer")
-    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Store")
+    * @ORM\ManyToOne(targetEntity="Store", inversedBy="ratings", cascade="ALL")
     */
-    private $storeId;
+    private $store;
 
     /**
     * @ORM\Column(type="integer")
@@ -38,62 +36,15 @@ class Rating
     */
     private $rating;
 
+
     /**
-     * Get ratingId
+     * Get id
      *
      * @return integer
      */
-    public function getRatingId()
+    public function getId()
     {
-        return $this->ratingId;
-    }
-
-    /**
-     * Set customerId
-     *
-     * @param integer $customerId
-     *
-     * @return Rating
-     */
-    public function setCustomerId($customerId)
-    {
-        $this->customerId = $customerId;
-
-        return $this;
-    }
-
-    /**
-     * Get customerId
-     *
-     * @return integer
-     */
-    public function getCustomerId()
-    {
-        return $this->customerId;
-    }
-
-    /**
-     * Set storeId
-     *
-     * @param integer $storeId
-     *
-     * @return Rating
-     */
-    public function setStoreId($storeId)
-    {
-        $this->storeId = $storeId;
-
-        return $this;
-    }
-
-    /**
-     * Get storeId
-     *
-     * @return integer
-     */
-    public function getStoreId()
-    {
-        return $this->storeId;
+        return $this->id;
     }
 
     /**
@@ -118,5 +69,53 @@ class Rating
     public function getRating()
     {
         return $this->rating;
+    }
+
+    /**
+     * Set customerId
+     *
+     * @param \AppBundle\Entity\Member $customerId
+     *
+     * @return Rating
+     */
+    public function setCustomerId(\AppBundle\Entity\Member $customerId = null)
+    {
+        $this->customerId = $customerId;
+
+        return $this;
+    }
+
+    /**
+     * Get customerId
+     *
+     * @return \AppBundle\Entity\Member
+     */
+    public function getCustomerId()
+    {
+        return $this->customerId;
+    }
+
+    /**
+     * Set storeId
+     *
+     * @param \AppBundle\Entity\Store $storeId
+     *
+     * @return Rating
+     */
+    public function setStoreId(\AppBundle\Entity\Store $storeId = null)
+    {
+        $this->storeId = $storeId;
+
+        return $this;
+    }
+
+    /**
+     * Get storeId
+     *
+     * @return \AppBundle\Entity\Store
+     */
+    public function getStoreId()
+    {
+        return $this->storeId;
     }
 }

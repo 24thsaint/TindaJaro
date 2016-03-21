@@ -69,7 +69,7 @@ table td {
 	background-color: rgb(221, 221, 221);
 }
 
-#table-display-fix {
+.table-display-fix {
 	border-style: solid;
 	padding: 10px;
 }
@@ -91,5 +91,9 @@ ul > li:hover {
 }
 
 #chatter {
+	display: inline;
+}
+
+#report-dropdown {
 	display: inline;
 }

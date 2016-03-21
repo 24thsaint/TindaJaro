@@ -22,6 +22,7 @@ security:
         - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY}
         - { path: ^/overview, roles: ROLE_USER}
         - { path: ^/vendor*, roles: ROLE_MEMBER}
+        - { path: ^/mystore*, roles: ROLE_MEMBER}
         - { path: ^/browse*, roles: ROLE_MEMBER}
         - { path: ^/cart*, roles: ROLE_MEMBER}
         - { path: ^/chat*, roles: ROLE_MEMBER}

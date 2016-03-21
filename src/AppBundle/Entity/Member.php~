@@ -1,0 +1,151 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\Member\MemberInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+
+/**
+* @ORM\Entity
+* @ORM\Table(name="app_members")
+*/
+class Member extends Member
+{
+
+    /**
+    * @ORM\OneToOne(targetEntity="Store", mappedBy="vendor", cascade="ALL", orphanRemoval=true)
+    */
+    private $store;
+
+    /**
+    * @ORM\OneToOne(targetEntity="Cart", mappedBy="customer", cascade="ALL", orphanRemoval=true)
+    */
+    private $cart;
+
+    /**
+    * @ORM\OneToMany(targetEntity="Order", mappedBy="customer", cascade="ALL", orphanRemoval=true)
+    */
+    private $orders;
+
+    /**
+    * @ORM\OneToMany(targetEntity="DeliveryGuy", mappedBy="owner", cascade="ALL", orphanRemoval=true)
+    */
+    private $deliveryGuys;
+
+    public function __construct()
+    {
+        $this->orders = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->deliveryGuys = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    // other properties and methods
+
+    /**
+    * Set store
+    *
+    * @param \AppBundle\Entity\Store $store
+    *
+    * @return Member
+    */
+    public function setStore(\AppBundle\Entity\Store $store = null)
+    {
+        $this->store = $store;
+
+        return $this;
+    }
+
+    /**
+    * Get store
+    *
+    * @return \AppBundle\Entity\Store
+    */
+    public function getStore()
+    {
+        return $this->store;
+    }
+
+    public function setPlainPassword($plainPassword) {
+        $this->plainPassword = $plainPassword;
+        return $this;
+    }
+
+    public function getPlainPassword() {
+        return $this->plainPassword;
+    }
+
+    public function createStore() {
+        $this->setMemberType("ROLE_MEMBER");
+
+        $store = new Store();
+        $store->setName("Tindahan ni " . $this->getFirstName());
+        $store->close();
+        $store->setVendor($this);
+        $store->setDescription("Please, configure your store name and description by clicking on EDIT STORE NAME!");
+        $store->setMinimumPurchasePrice(0);
+        $store->setImage('storeDefault.jpeg');
+
+        $this->setStore($store);
+    }
+
+    /**
+    * Set cart
+    *
+    * @param \AppBundle\Entity\Cart $cart
+    *
+    * @return Member
+    */
+    public function setCart(\AppBundle\Entity\Cart $cart = null)
+    {
+        $this->cart = $cart;
+
+        return $this;
+    }
+
+    /**
+    * Get cart
+    *
+    * @return \AppBundle\Entity\Cart
+    */
+    public function getCart()
+    {
+        return $this->cart;
+    }
+
+
+    /**
+    * Add order
+    *
+    * @param \AppBundle\Entity\Order $order
+    *
+    * @return Member
+    */
+    public function addOrder(\AppBundle\Entity\Order $order)
+    {
+        $this->orders[] = $order;
+
+        return $this;
+    }
+
+    /**
+    * Remove order
+    *
+    * @param \AppBundle\Entity\Order $order
+    */
+    public function removeOrder(\AppBundle\Entity\Order $order)
+    {
+        $this->orders->removeElement($order);
+    }
+
+    /**
+    * Get orders
+    *
+    * @return \Doctrine\Common\Collections\Collection
+    */
+    public function getOrders()
+    {
+        return $this->orders;
+    }
+}
