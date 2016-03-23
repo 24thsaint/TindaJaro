@@ -1,10 +1,10 @@
 {% for notification in notifications %}
     {% if notification['type'] == 'REJECTED' %}
-        <div class="alert alert-danger">You have {{ notification['count'] }} rejected orders! <a href="/transaction-history">See Transaction History</a></div>
+        <div class="alert alert-danger">You have {{ notification['count'] }} rejected order{{ (notification['count'] == '1') ? '' : 's' }}! <a href="/transaction-history">See Transaction History</a></div>
     {% endif %}
 
     {% if notification['type'] == 'DELIVERED' %}
-        <div class="alert alert-success">{{ notification['count'] }} order sucessfully shipped! <a href="/shipments/view">View Shipped Orders</a></div>
+        <div class="alert alert-success">You have {{ notification['count'] }} order{{ (notification['count'] == '1') ? '' : 's' }} sucessfully shipped! <a href="/shipments/view">View Shipped Orders</a></div>
     {% endif %}
 
     {% if notification['type'] == 'CHECKED-OUT' %}
@@ -12,6 +12,6 @@
     {% endif %}
 
     {% if notification['type'] == 'IN-CART' %}
-        <div class="alert alert-warning">You have {{ notification['count'] }} reserved products in cart! <a href="/cart">View Cart</a></div>
+        <div class="alert alert-warning">You have {{ notification['count'] }} reserved product{{ (notification['count'] == '1') ? '' : 's' }} in cart! <a href="/cart">View Cart</a></div>
     {% endif %}
 {% endfor %}

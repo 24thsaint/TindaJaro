@@ -1,0 +1,49 @@
+<tr>
+    <td rowspan="7">
+        <center>
+            <img id="product-image-preview" src="{{ asset('/uploads/products/images/'~ product.image ) }}" />
+        </center>
+    </td>
+</tr>
+<tr>
+    <td><h1>{{ product.name }}</h1></td>
+</tr>
+<tr>
+    <td><p><b>Description:</b> {{ product.description }}</p></td>
+</tr>
+<tr>
+    <td><p><b>Price:</b> PHP {{ product.price }}</p></td>
+</tr>
+<tr>
+    <td><p><b>Stocks:</b> <span id="stocks">{{ product.quantity }} available</span></p></td>
+</tr>
+{% if app.user.id == product.store.vendor.id %}
+<!-- Do nothing -->
+<tr>
+    <td>
+        <div class="alert alert-success">This is how your customers see your product</div>
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td>
+        <form id="form" name="form" role="form" class="form-inline" method="POST" action="/cart/add/{{ product.store.vendor.id }}/{{ product.id }}">
+            <div class="form-group">
+                {% for flashMessage in app.session.flashbag.get('notice') %}
+                <div class="alert alert-danger">
+                    {{ flashMessage }}
+                </div>
+                {% endfor %}
+                <label for="quantity">Quantity:</label>
+                <input type="text" class="form-control" name="quantity" id="quantity" value="1" />
+                <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-shopping-cart"></span> Add To Cart</button>
+            </div>
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>
+        <button type="button" data-toggle="modal" data-target="#vendorContactModal" class="btn btn-default">Contact Vendor</button>
+    </td>
+</tr>
+{% endif %}

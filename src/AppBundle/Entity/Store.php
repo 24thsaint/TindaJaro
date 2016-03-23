@@ -77,7 +77,25 @@ class Store
        $this->products = new ArrayCollection();
        $this->ratings = new ArrayCollection();
        $this->customers = new ArrayCollection();
-    }
+   }
+
+   public function cancelShipment($customer) {
+       $orders = $this->getAllOrdersOfCustomerByStatus($customer, 'ACCEPTED BY VENDOR: Being Shipped');
+       foreach ($orders as $order) {
+           $now = new \DateTime();
+           $order->setTransactionDate($now);
+           $order->setStatus('CHECKED-OUT');
+       }
+   }
+
+   public function rejectOrders($customer) {
+       $orders = $this->getAllOrdersOfCustomerByStatus($customer, 'CHECKED-OUT');
+       foreach ($orders as $order) {
+           $now = new \DateTime();
+           $order->setTransactionDate($now);
+           $order->setStatus('REJECTED');
+       }
+   }
 
     public function getAllOrdersOfCustomerByStatus($customer, $status) {
         $orders = array();

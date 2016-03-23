@@ -1,0 +1,16 @@
+{% for product in products %}
+<a href="/product/view/{{ product.id }}">
+    <div class="col-sm-2 panel panel-default hover-effect">
+        <center>
+            <img class="preview-thumbnail" src="{{ asset('/uploads/products/images/'~product.image) }}" /><br />
+            <h3>{{ product.name }}</h3>
+            <p>
+                <span style="color: green">
+                    <b>PHP {{ product.price }}</b><br />
+                </span>
+                Quantity Left: {{ product.quantity }}
+            </p>
+        </center>
+    </div>
+</a>
+{% endfor %}

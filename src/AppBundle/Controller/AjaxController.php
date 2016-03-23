@@ -8,8 +8,38 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use AppBundle\Entity\Message;
 use AppBundle\Entity\Rating;
+use AppBundle\Entity\Store;
+use AppBundle\Entity\Product;
 
 class AjaxController extends Controller {
+
+    /**
+    * @Route("/product/view/update/{product}")
+    */
+    public function updateDetailAction(Product $product) {
+
+        return $this->render(
+            'Includables/ProductDetails.html.twig',
+            array(
+                'product' => $product
+            )
+        );
+    }
+
+    /**
+    * @Route("/browse/stores/update/{store}")
+    */
+    public function updateProductsAction(Store $store) {
+        $productRepository = $this->getDoctrine()->getRepository("AppBundle:Product");
+        $products = $productRepository->findAllActiveProductsInASpecificStore($store);
+
+        return $this->render(
+            'Includables/ProductList.html.twig',
+            array(
+                'products' => $products
+            )
+        );
+    }
 
     /**
     * @Route("/chatMessages")
@@ -33,17 +63,6 @@ class AjaxController extends Controller {
         $em->flush();
 
         return $this->getChatMessagesAction();
-    }
-
-    private function notificationCounter($query, $type) {
-        $em = $this->getDoctrine()->getManager();
-
-        $query = $em->createQuery($query)->setParameter("user", $type);
-
-        $result = $query->getResult();
-        $resultCount = count($result);
-
-        return $resultCount;
     }
 
     /**

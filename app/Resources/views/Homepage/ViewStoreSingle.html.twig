@@ -4,53 +4,56 @@
 
 <div class="container">
     <h1><img class="preview-thumbnail img-circle" src="{{ asset('/uploads/stores/images/'~store.image) }}" /> {{ store.name }}</h1>
-        <div id="ratingNotification" class="alert alert-success fade in" style="display: none;">Your rating was successfully acknowledged!</div>
-        <label for="input-7-xs" class="control-label">Store Rating:</label>
-        <input id="input-7-xs" class="rating rating-loading" value="{{ store.getAverageRatings }}" data-min="0" data-max="5" data-step="1" data-size="xs" />
+    <div id="ratingNotification" class="alert alert-success fade in" style="display: none;">Your rating was successfully acknowledged!</div>
+    <label for="input-7-xs" class="control-label">Store Rating:</label>
+    <input id="input-7-xs" class="rating rating-loading" value="{{ store.getAverageRatings }}" data-min="0" data-max="5" data-step="1" data-size="xs" />
     <hr />
-    {% for product in products %}
-    <a href="/product/view/{{ product.id }}">
-        <div class="col-sm-2 panel panel-default hover-effect">
-            <center>
-            <img class="preview-thumbnail" src="{{ asset('/uploads/products/images/'~product.image) }}" /><br />
-            <h3>{{ product.name }}</h3>
-            <p>
-            <span style="color: green">
-                <b>PHP {{ product.price }}</b><br />
-            </span>
-                Quantity Left: {{ product.quantity }}
-            </p>
-            </center>
-        </div>
-    </a>
-    {% endfor %}
-
+    <div id="product-list">
+        {% include 'Includables/ProductList.html.twig' %}
+    </div>
 </div>
 
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $('#input-7-xs').on('rating.change', function(event, value, caption) {
-                rate(value);
-                $('#ratingNotification').slideDown();
+<script type="text/javascript">
+$(document).ready(function () {
+    $('#input-7-xs').on('rating.change', function(event, value, caption) {
+        rate(value);
+        $('#ratingNotification').slideDown();
 
-                window.setTimeout(
-                    function() {
-                        $('#ratingNotification').hide();
-                    }, 2000
-                );
-            });
-        });
+        window.setTimeout(
+            function() {
+                $('#ratingNotification').hide();
+            }, 2000
+        );
+    });
+});
 
-        function rate(rating) {
-    	    var xmlhttp = new XMLHttpRequest();
-    	    xmlhttp.onreadystatechange = function() {
-    	        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                    $('#input-7-xs').rating('update', xmlhttp.responseText);
-    	        }
-    	    };
-    	    xmlhttp.open("GET", "/rate/{{ store.id }}/" + rating, true);
-    	    xmlhttp.send();
-    	}
-    </script>
+function rate(rating) {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            $('#input-7-xs').rating('update', xmlhttp.responseText);
+        }
+    };
+    xmlhttp.open("GET", "/rate/{{ store.id }}/" + rating, true);
+    xmlhttp.send();
+}
+
+function refreshProducts() {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            if (document.getElementById("product-list").innerHTML != xmlhttp.responseText) {
+                document.getElementById("product-list").innerHTML = xmlhttp.responseText;
+            }
+        }
+    };
+    xmlhttp.open("GET", "/browse/stores/update/{{ store.id }}", true);
+    xmlhttp.send();
+}
+
+window.setInterval(function () {
+    refreshProducts();
+}, 1000);
+</script>
 
 {% endblock %}

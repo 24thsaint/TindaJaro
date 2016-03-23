@@ -67,7 +67,7 @@ class VendorController extends Controller {
         $this->getUser()->getStore()->shipPendingOrders($customer);
         $em->flush();
 
-        $notice = "All orders of ". $customer->getFullName() ." have been marked as \"Shipped\" successfully!";
+        $notice = "All orders of ". $customer->getFullName() ." have been marked as SHIPPED successfully!";
 
         $this->get('session')->getFlashBag()->add(
             'notice',
@@ -146,56 +146,30 @@ class VendorController extends Controller {
 
 
     /**
-    * @Route("/shipcancel/{customerId}")
+    * @Route("/shipcancel/{customer}")
     */
-    public function cancelShipmentAction($customerId) {
+    public function cancelShipmentAction(Member $customer) {
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery(
-            '
-            SELECT o FROM AppBundle:Order o WHERE o.customerId=:customerId AND o.vendorId=:vendorId AND o.status=\'ACCEPTED BY VENDOR: Being Shipped\'
-            '
-        )->setParameter('customerId', $customerId)->setParameter('vendorId', $this->getUser()->getId());
-
-        $orders = $query->getResult();
-
-        foreach ($orders as $order) {
-            $now = new \DateTime();
-            $order->setTransactionDate($now);
-            $order->setStatus('CHECKED-OUT');
-            $em->flush();
-        }
-
+        $this->getUser()->getStore()->cancelShipment($customer);
+        $em->flush();
         $this->get('session')->getFlashBag()->add(
             'notice',
-            'The order was successfully moved to "Pending Orders".'
+            'The orders of ' . $customer->getFullName() . ' were successfully moved to your "Pending Orders".'
         );
-
         return $this->redirect('/shipments/view');
     }
 
     /**
-    * @Route("/reject/{customerId}")
+    * @Route("/reject/{customer}")
     */
-    public function rejectOrderAction($customerId) {
+    public function rejectOrderAction(Member $customer) {
         $em = $this->getDoctrine()->getManager();
-        $query = $em->createQuery(
-            '
-            SELECT o FROM AppBundle:Order o WHERE o.customerId=:customerId AND o.vendorId=:vendorId AND o.status=\'CHECKED-OUT\'
-            '
-        )->setParameter('customerId', $customerId)->setParameter('vendorId', $this->getUser()->getId());
-
-        $orders = $query->getResult();
-
-        foreach ($orders as $order) {
-            $now = new \DateTime();
-            $order->setTransactionDate($now);
-            $order->setStatus('REJECTED');
-            $em->flush();
-        }
+        $this->getUser()->getStore()->rejectOrders($customer);
+        $em->flush();
 
         $this->get('session')->getFlashBag()->add(
             'notice',
-            'The order was successfully rejected.'
+            'The orders of ' . $customer->getFullName() . ' were successfully marked as REJECTED.'
         );
 
         return $this->redirect('/mystore/view-pending');
@@ -206,7 +180,7 @@ class VendorController extends Controller {
     */
     public function deliveryGuyRegistrationAction(Request $request)
     {
-        $user = new DeliveryGuy($this->getUser());        
+        $user = new DeliveryGuy($this->getUser());
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 

@@ -61,13 +61,11 @@ class Member extends User
 
     public function __construct()
     {
-        $this->createStore();
         $this->generateRandomChatColor();
         $this->setMemberType("ROLE_MEMBER");
         $cart = new Cart();
         $cart->setCustomer($this);
-        $this->setCart($cart);
-
+        $this->setCart($cart);        
         $this->orders = new \Doctrine\Common\Collections\ArrayCollection();
         $this->deliveryGuys = new \Doctrine\Common\Collections\ArrayCollection();
     }
@@ -106,7 +104,6 @@ class Member extends User
         $store->setDescription("Please, configure your store name and description by clicking on EDIT STORE NAME!");
         $store->setMinimumPurchasePrice(0);
         $store->setImage('storeDefault.jpeg');
-
         $this->setStore($store);
     }
 
