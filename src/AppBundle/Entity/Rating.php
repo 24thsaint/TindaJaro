@@ -57,6 +57,12 @@ class Rating
      */
     public function setRating($rating)
     {
+        if ($rating > 5) {
+            $rating = 5;
+        }
+        if ($rating < 0) {
+            $rating = 0;
+        }
         $this->rating = $rating;
 
         return $this;

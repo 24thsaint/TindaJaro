@@ -118,6 +118,7 @@ class Cart
      */
     public function addOrder(\AppBundle\Entity\Order $order)
     {
+        $order->getProduct()->setQuantity($order->getProduct()->getQuantity() - $order->getQuantity());
         $this->orders[] = $order;
 
         return $this;

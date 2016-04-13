@@ -73,9 +73,7 @@ class CheckoutController extends Controller
             );
             return $this->redirect('/product/view/'.$product->getId());
             exit();
-        }
-
-        $product->setQuantity($product->getQuantity() - $quantity);
+        }        
 
         try {
             // if order exists, update the quantity
